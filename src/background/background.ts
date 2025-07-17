@@ -4,7 +4,7 @@
  */
 
 import { storageManager } from '../utils/storage';
-import { sendToChatGPT, validateMessage } from '../utils/chatgpt';
+import { sendToAI, validateMessage } from '../utils/chatgpt';
 import { i18n } from '../utils/i18n';
 
 interface CaptureResult {
@@ -203,6 +203,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         .catch(error => sendResponse({ success: false, error: error.message }));
       return true; // Keep message channel open for async response
       
+    case 'SEND_TO_AI':
+      handleSendToAI(message.data)
+        .then(result => sendResponse(result))
+        .catch(error => sendResponse({ success: false, error: error.message }));
+      return true; // Keep message channel open for async response
+      
     case 'GET_SETTINGS':
       storageManager.getSettings()
         .then(settings => sendResponse(settings))
@@ -221,7 +227,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 /**
- * Handle send to ChatGPT message
+ * Handle send to ChatGPT message (backward compatibility)
  */
 async function handleSendToChatGPT(data: any) {
   try {
@@ -236,10 +242,35 @@ async function handleSendToChatGPT(data: any) {
       return { success: false, error: validation.error };
     }
     
-    const result = await sendToChatGPT(data.message, data.autoSend);
+    const result = await sendToAI(data.message, data.autoSend, 'chatgpt');
     return result;
   } catch (error) {
     console.error('Error in handleSendToChatGPT:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+/**
+ * Handle send to AI platform message
+ */
+async function handleSendToAI(data: any) {
+  try {
+    console.log('Received data:', data);
+    console.log('Message to validate:', data.message);
+    
+    // Validate the message object, not the entire data
+    const validation = validateMessage(data.message);
+    console.log('Validation result:', validation);
+    
+    if (!validation.valid) {
+      return { success: false, error: validation.error };
+    }
+    
+    const platformId = data.platform || 'chatgpt';
+    const result = await sendToAI(data.message, data.autoSend, platformId);
+    return result;
+  } catch (error) {
+    console.error('Error in handleSendToAI:', error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 } 

@@ -1,29 +1,32 @@
 /**
- * ChatGPT integration utility
- * Handles deep linking and fallback to clipboard
+ * AI Platform integration utility
+ * Handles deep linking and fallback to clipboard for multiple AI platforms
  */
 
 import { copyToClipboard } from './clipboard';
+import { getPlatform, injectTextIntoPlatform, type AIPlatform } from './ai-platforms';
 
-export interface ChatGPTMessage {
+export interface AIMessage {
   text: string;
   instructions: string;
   model?: string;
+  platform?: string;
 }
 
-export interface ChatGPTResult {
+export interface AIResult {
   success: boolean;
   method: 'deeplink' | 'clipboard';
   error?: string;
+  platform?: string;
 }
 
 const CHATGPT_BASE_URL = 'https://chatgpt.com';
 const URL_SIZE_LIMIT = 1800; // Safe limit for URLs
 
 /**
- * Build ChatGPT URL with query parameters
+ * Build ChatGPT URL with query parameters (only works for ChatGPT)
  */
-export function buildChatGPTUrl(message: ChatGPTMessage): string {
+export function buildChatGPTUrl(message: AIMessage): string {
   const { text, instructions, model = 'gpt-4o' } = message;
   
   // Add null checks and default to empty string
@@ -54,7 +57,7 @@ export function buildChatGPTUrl(message: ChatGPTMessage): string {
 /**
  * Format message for clipboard
  */
-export function formatMessageForClipboard(message: ChatGPTMessage): string {
+export function formatMessageForClipboard(message: AIMessage): string {
   const { text, instructions } = message;
   
   // Add null checks and default to empty string
@@ -73,27 +76,30 @@ export function formatMessageForClipboard(message: ChatGPTMessage): string {
 }
 
 /**
- * Send message to ChatGPT using deep link or clipboard fallback
+ * Send message to AI platform using deep link or clipboard fallback
  */
-export async function sendToChatGPT(
-  message: ChatGPTMessage,
-  autoSend: boolean = true
-): Promise<ChatGPTResult> {
+export async function sendToAI(
+  message: AIMessage,
+  autoSend: boolean = true,
+  platformId: string = 'chatgpt'
+): Promise<AIResult> {
+  const platform = getPlatform(platformId);
   const formattedMessage = formatMessageForClipboard(message);
   
   if (!formattedMessage.trim()) {
     return {
       success: false,
       method: 'clipboard',
-      error: 'No message to send'
+      error: 'No message to send',
+      platform: platform.name
     };
   }
   
   // Always copy to clipboard as backup
   await copyToClipboard(formattedMessage);
   
-  if (autoSend) {
-    // Try deep link first
+  if (autoSend && platformId === 'chatgpt') {
+    // Try deep link first (only works for ChatGPT)
     const deepLinkUrl = buildChatGPTUrl(message);
     
     if (deepLinkUrl.length <= URL_SIZE_LIMIT) {
@@ -101,7 +107,8 @@ export async function sendToChatGPT(
         await chrome.tabs.create({ url: deepLinkUrl });
         return {
           success: true,
-          method: 'deeplink'
+          method: 'deeplink',
+          platform: platform.name
         };
       } catch (error) {
         console.warn('Deep link failed:', error);
@@ -109,120 +116,32 @@ export async function sendToChatGPT(
     }
   }
   
-  // Manual mode: open ChatGPT and inject content into input field
+  // Manual mode: open AI platform and inject content into input field
   try {
-    const tab = await chrome.tabs.create({ url: CHATGPT_BASE_URL });
+    const tab = await chrome.tabs.create({ url: platform.url });
     
     if (tab.id) {
       // Wait for page to load, then inject the content
       setTimeout(async () => {
         try {
-          await chrome.scripting.executeScript({
-            target: { tabId: tab.id! },
-            func: (messageText: string) => {
-              // Enhanced injection approach with better selectors and retry logic
-              const injectContent = () => {
-                // Try multiple selectors in order of preference
-                const selectors = [
-                  'textarea[data-id="root"]',
-                  'textarea[placeholder*="Message"]',
-                  'textarea[placeholder*="message"]',
-                  'textarea[placeholder*="Send"]',
-                  'textarea[placeholder*="send"]',
-                  'div[contenteditable="true"]',
-                  'textarea'
-                ];
-                
-                for (const selector of selectors) {
-                  const element = document.querySelector(selector);
-                  
-                  if (element) {
-                    try {
-                      if (element instanceof HTMLTextAreaElement) {
-                        // For textarea elements
-                        element.value = messageText;
-                        
-                        // Trigger comprehensive events
-                        element.dispatchEvent(new Event('input', { bubbles: true }));
-                        element.dispatchEvent(new Event('change', { bubbles: true }));
-                        element.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true }));
-                        element.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
-                        
-                        // Focus and select
-                        element.focus();
-                        element.select();
-                        
-                        console.log('✅ Content successfully injected into textarea:', selector);
-                        return true;
-                      } else if (element instanceof HTMLDivElement && element.contentEditable === 'true') {
-                        // For contenteditable div elements
-                        element.textContent = messageText;
-                        
-                        // Trigger events
-                        element.dispatchEvent(new Event('input', { bubbles: true }));
-                        element.dispatchEvent(new Event('change', { bubbles: true }));
-                        element.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true }));
-                        element.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
-                        
-                        // Focus and select all
-                        element.focus();
-                        const selection = window.getSelection();
-                        const range = document.createRange();
-                        range.selectNodeContents(element);
-                        selection?.removeAllRanges();
-                        selection?.addRange(range);
-                        
-                        console.log('✅ Content injected into contenteditable div:', selector);
-                        return true;
-                      }
-                    } catch (error) {
-                      console.warn('Failed to inject into element:', selector, error);
-                      continue;
-                    }
-                  }
-                }
-                
-                console.warn('❌ Could not find ChatGPT input field');
-                return false;
-              };
-              
-              // Multiple retry attempts with increasing delays
-              const retryAttempts = [0, 1000, 2000, 5000];
-              let attemptIndex = 0;
-              
-              const tryInject = () => {
-                if (injectContent()) {
-                  return; // Success!
-                }
-                
-                attemptIndex++;
-                if (attemptIndex < retryAttempts.length) {
-                  console.log(`Retrying injection attempt ${attemptIndex + 1}/${retryAttempts.length} in ${retryAttempts[attemptIndex]}ms`);
-                  setTimeout(tryInject, retryAttempts[attemptIndex]);
-                } else {
-                  console.warn('❌ All injection attempts failed - text is copied to clipboard, please paste manually');
-                }
-              };
-              
-              tryInject();
-            },
-            args: [formattedMessage]
-          });
+          await injectTextIntoPlatform(tab.id!, platform, formattedMessage);
         } catch (error) {
-          console.warn('Failed to inject content into ChatGPT:', error);
+          console.warn(`Failed to inject content into ${platform.name}:`, error);
         }
       }, 3000); // Wait 3 seconds for page to load
     }
     
     return {
       success: true,
-      method: 'clipboard'
+      method: 'clipboard',
+      platform: platform.name
     };
   } catch (error) {
     return {
       success: false,
       method: 'clipboard',
-      error: 'Failed to open ChatGPT tab'
+      error: `Failed to open ${platform.name} tab`,
+      platform: platform.name
     };
   }
 }
@@ -255,9 +174,9 @@ export async function testDeepLink(): Promise<boolean> {
 }
 
 /**
- * Validate ChatGPT message
+ * Validate AI message
  */
-export function validateMessage(message: ChatGPTMessage): {
+export function validateMessage(message: AIMessage): {
   valid: boolean;
   error?: string;
 } {
@@ -283,4 +202,9 @@ export function validateMessage(message: ChatGPTMessage): {
   }
   
   return { valid: true };
-} 
+}
+
+// Backward compatibility exports
+export type ChatGPTMessage = AIMessage;
+export type ChatGPTResult = AIResult;
+export const sendToChatGPT = sendToAI; 

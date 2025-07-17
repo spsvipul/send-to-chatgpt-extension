@@ -10,6 +10,7 @@ export interface ExtensionSettings {
   defaultModel: string;
   darkMode: boolean;
   saveInstructions: boolean;
+  defaultPlatform: 'chatgpt' | 'claude' | 'gemini';
 }
 
 export const DEFAULT_SETTINGS: ExtensionSettings = {
@@ -19,6 +20,7 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
   defaultModel: 'gpt-4o',
   darkMode: false,
   saveInstructions: false,
+  defaultPlatform: 'chatgpt',
 };
 
 class StorageManager {

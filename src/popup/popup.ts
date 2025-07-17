@@ -5,6 +5,7 @@
 
 import { storageManager, ExtensionSettings } from '../utils/storage';
 import { i18n } from '../utils/i18n';
+import { getAllPlatforms, getPlatform } from '../utils/ai-platforms';
 
 interface PopupData {
   text: string;
@@ -421,8 +422,16 @@ class PopupManager {
                 <span id="save-instructions-label">${i18n.saveInstructions()}</span>
               </label>
               <label>
+                <span>AI Platform:</span>
+                <select id="ai-platform" style="margin-left: 8px; padding: 4px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 14px;">
+                  ${getAllPlatforms().map(platform => 
+                    `<option value="${platform.id}">${platform.icon} ${platform.name}</option>`
+                  ).join('')}
+                </select>
+              </label>
+              <label>
                 <input type="checkbox" id="auto-send">
-                <span id="auto-send-label">Auto-send to ChatGPT (uses default GPT-4o)</span>
+                <span id="auto-send-label">Auto-send (ChatGPT only - uses default GPT-4o)</span>
               </label>
               <div class="mode-explanation">
                 <p><strong>Auto-send ON:</strong> Sends directly to ChatGPT with default model</p>
@@ -499,6 +508,12 @@ class PopupManager {
     const saveInstructionsCheckbox = this.shadowRoot.getElementById('save-instructions') as HTMLInputElement;
     if (saveInstructionsCheckbox) {
       saveInstructionsCheckbox.checked = this.settings.saveInstructions;
+    }
+
+    // Set platform selection
+    const platformSelect = this.shadowRoot.getElementById('ai-platform') as HTMLSelectElement;
+    if (platformSelect) {
+      platformSelect.value = this.settings.defaultPlatform;
     }
 
     const autoSendCheckbox = this.shadowRoot.getElementById('auto-send') as HTMLInputElement;
@@ -590,9 +605,10 @@ class PopupManager {
     const instructionsArea = this.shadowRoot.getElementById('instructions') as HTMLTextAreaElement;
     const saveInstructionsCheckbox = this.shadowRoot.getElementById('save-instructions') as HTMLInputElement;
     const autoSendCheckbox = this.shadowRoot.getElementById('auto-send') as HTMLInputElement;
+    const platformSelect = this.shadowRoot.getElementById('ai-platform') as HTMLSelectElement;
 
     // Check if all elements exist
-    if (!selectedTextArea || !instructionsArea || !saveInstructionsCheckbox || !autoSendCheckbox) {
+    if (!selectedTextArea || !instructionsArea || !saveInstructionsCheckbox || !autoSendCheckbox || !platformSelect) {
       console.error('Could not find required popup elements');
       this.showNotification('Error: Could not find form elements', 'error');
       return;
@@ -602,28 +618,32 @@ class PopupManager {
     const instructions = instructionsArea.value || '';
     const saveInstructions = saveInstructionsCheckbox.checked;
     const autoSend = autoSendCheckbox.checked;
+    const selectedPlatform = platformSelect.value;
 
-    console.log('Form values:', { selectedText, instructions, saveInstructions, autoSend });
+    console.log('Form values:', { selectedText, instructions, saveInstructions, autoSend, selectedPlatform });
 
     // Save settings if requested
-    if (saveInstructions || this.settings?.autoSend !== autoSend) {
+    if (saveInstructions || this.settings?.autoSend !== autoSend || this.settings?.defaultPlatform !== selectedPlatform) {
       await storageManager.saveSettings({
         defaultInstructions: saveInstructions ? instructions : '',
         saveInstructions: saveInstructions,
-        autoSend: autoSend
+        autoSend: autoSend,
+        defaultPlatform: selectedPlatform as 'chatgpt' | 'claude' | 'gemini'
       });
     }
 
     // Send message to background script
     const messageData = {
-      type: 'SEND_TO_CHATGPT',
+      type: 'SEND_TO_AI',
       data: {
         message: {
           text: selectedText,
           instructions: instructions,
-          model: this.settings?.defaultModel || 'gpt-4o'
+          model: this.settings?.defaultModel || 'gpt-4o',
+          platform: selectedPlatform
         },
-        autoSend: autoSend
+        autoSend: autoSend,
+        platform: selectedPlatform
       }
     };
     

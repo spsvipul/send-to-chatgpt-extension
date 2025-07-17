@@ -13,7 +13,9 @@
     "notifications"
   ],
   "host_permissions": [
-    "https://chatgpt.com/*"
+    "https://chatgpt.com/*",
+    "https://claude.ai/*",
+    "https://gemini.google.com/*"
   ],
   "action": {
     "default_title": "Send to ChatGPT",
