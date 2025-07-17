@@ -1,0 +1,70 @@
+{
+  "extensionName": {
+    "message": "ChatGPTに送信",
+    "description": "Name of the extension"
+  },
+  "extensionDescription": {
+    "message": "テキストをハイライトして、指示を追加し、ワンクリックでChatGPTに送信",
+    "description": "Description of the extension"
+  },
+  "sendToChatGPT": {
+    "message": "ChatGPTに送信",
+    "description": "Button text to send message to ChatGPT"
+  },
+  "selectedText": {
+    "message": "選択したテキスト:",
+    "description": "Label for selected text textarea"
+  },
+  "instructions": {
+    "message": "指示:",
+    "description": "Label for instructions textarea"
+  },
+  "instructionsPlaceholder": {
+    "message": "ChatGPTへの指示を入力してください...",
+    "description": "Placeholder text for instructions input"
+  },
+  "noTextSelected": {
+    "message": "テキストが選択されていません",
+    "description": "Placeholder when no text is selected"
+  },
+  "cancel": {
+    "message": "キャンセル",
+    "description": "Cancel button text"
+  },
+  "send": {
+    "message": "送信",
+    "description": "Send button text"
+  },
+  "autoSend": {
+    "message": "ChatGPTに自動送信",
+    "description": "Auto-send checkbox label"
+  },
+  "saveInstructions": {
+    "message": "指示をデフォルトとして保存",
+    "description": "Save instructions checkbox label"
+  },
+  "messageCopied": {
+    "message": "メッセージをクリップボードにコピーしました",
+    "description": "Toast message when text is copied"
+  },
+  "openingChatGPT": {
+    "message": "ChatGPTを開いています...",
+    "description": "Toast message when opening ChatGPT"
+  },
+  "error": {
+    "message": "エラーが発生しました。もう一度お試しください。",
+    "description": "Generic error message"
+  },
+  "clipboardError": {
+    "message": "クリップボードにコピーできませんでした。手動でコピーしてください。",
+    "description": "Clipboard error message"
+  },
+  "textTruncated": {
+    "message": "テキストが{limit}文字に切り詰められました",
+    "description": "Message when text is truncated"
+  },
+  "askChatGPT": {
+    "message": "ChatGPTに質問...",
+    "description": "Context menu item text"
+  }
+} 

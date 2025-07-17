@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Send to ChatGPT - Options</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f9fafb;
+      color: #111827;
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .header {
+      background: white;
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      margin-bottom: 24px;
+    }
+    
+    .header h1 {
+      font-size: 28px;
+      font-weight: 600;
+      color: #111827;
+      margin-bottom: 8px;
+    }
+    
+    .header p {
+      color: #6b7280;
+      font-size: 16px;
+    }
+    
+    .section {
+      background: white;
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      margin-bottom: 24px;
+    }
+    
+    .section h2 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #111827;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .section-icon {
+      font-size: 24px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+    
+    .form-group label {
+      display: block;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1px #3b82f6;
+    }
+    
+    .form-group textarea {
+      min-height: 80px;
+      resize: vertical;
+      font-family: inherit;
+    }
+    
+    .form-group input[type="number"] {
+      max-width: 200px;
+    }
+    
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+    }
+    
+    .checkbox-group label {
+      font-size: 14px;
+      font-weight: 400;
+      margin: 0;
+      cursor: pointer;
+      color: #374151;
+    }
+    
+    .help-text {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-width: 100px;
+    }
+    
+    .btn-primary {
+      background: #3b82f6;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #2563eb;
+    }
+    
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+    
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+    
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+    
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 12px 16px;
+      border-radius: 6px;
+      z-index: 1000;
+      font-size: 14px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      max-width: 300px;
+      word-wrap: break-word;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: all 0.2s;
+    }
+    
+    .notification.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .notification.success {
+      background: #10b981;
+      color: white;
+    }
+    
+    .notification.error {
+      background: #ef4444;
+      color: white;
+    }
+    
+    .notification.info {
+      background: #3b82f6;
+      color: white;
+    }
+    
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    
+    .status-indicator.success {
+      background: #dcfce7;
+      color: #166534;
+    }
+    
+    .status-indicator.error {
+      background: #fef2f2;
+      color: #dc2626;
+    }
+    
+    .status-indicator.warning {
+      background: #fef3c7;
+      color: #d97706;
+    }
+    
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    
+    .feature-card {
+      padding: 16px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      background: #f9fafb;
+    }
+    
+    .feature-card h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #111827;
+      margin-bottom: 8px;
+    }
+    
+    .feature-card p {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 12px;
+    }
+    
+    .keyboard-shortcut {
+      display: inline-block;
+      padding: 2px 6px;
+      background: #f3f4f6;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: monospace;
+      color: #374151;
+    }
+    
+    /* Dark mode support */
+    .dark {
+      background: #111827;
+      color: #f9fafb;
+    }
+    
+    .dark .header,
+    .dark .section {
+      background: #1f2937;
+      color: #f9fafb;
+    }
+    
+    .dark .form-group input,
+    .dark .form-group select,
+    .dark .form-group textarea {
+      background: #374151;
+      border-color: #4b5563;
+      color: #f9fafb;
+    }
+    
+    .dark .form-group input:focus,
+    .dark .form-group select:focus,
+    .dark .form-group textarea:focus {
+      border-color: #3b82f6;
+    }
+    
+    .dark .btn-secondary {
+      background: #374151;
+      color: #d1d5db;
+    }
+    
+    .dark .btn-secondary:hover {
+      background: #4b5563;
+    }
+    
+    .dark .feature-card {
+      background: #111827;
+      border-color: #374151;
+    }
+    
+    .dark .keyboard-shortcut {
+      background: #374151;
+      border-color: #4b5563;
+      color: #d1d5db;
+    }
+    
+    /* Mobile responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 16px;
+      }
+      
+      .header,
+      .section {
+        padding: 16px;
+      }
+      
+      .button-group {
+        flex-direction: column;
+      }
+      
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 id="options-title">Send to ChatGPT - Options</h1>
+      <p id="options-description">Configure your ChatGPT extension settings</p>
+    </div>
+    
+    <div class="section">
+      <h2>
+        <span class="section-icon">⚙️</span>
+        <span id="general-settings-title">General Settings</span>
+      </h2>
+      
+      <div class="form-group">
+        <div class="checkbox-group">
+          <input type="checkbox" id="auto-send">
+          <label for="auto-send" id="auto-send-label">Enable auto-send to ChatGPT</label>
+        </div>
+        <div class="help-text" id="auto-send-help">
+          When enabled, selected text will be sent directly to ChatGPT without showing the popup.
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="default-instructions" id="default-instructions-label">Default Instructions</label>
+        <textarea 
+          id="default-instructions" 
+          placeholder="Enter default instructions for ChatGPT..."
+        ></textarea>
+        <div class="help-text" id="default-instructions-help">
+          These instructions will be pre-filled when you use the extension.
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="default-model" id="default-model-label">Default Model</label>
+        <select id="default-model">
+          <option value="gpt-4o">GPT-4o (Recommended)</option>
+          <option value="gpt-4">GPT-4</option>
+          <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+        </select>
+        <div class="help-text" id="default-model-help">
+          Select the default ChatGPT model to use.
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="max-text-length" id="max-text-length-label">Maximum Text Length</label>
+        <input type="number" id="max-text-length" min="1000" max="16384" step="1024">
+        <div class="help-text" id="max-text-length-help">
+          Text longer than this will be truncated. Range: 1000-16384 characters.
+        </div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2>
+        <span class="section-icon">🎨</span>
+        <span id="appearance-title">Appearance</span>
+      </h2>
+      
+      <div class="form-group">
+        <div class="checkbox-group">
+          <input type="checkbox" id="dark-mode">
+          <label for="dark-mode" id="dark-mode-label">Dark mode</label>
+        </div>
+        <div class="help-text" id="dark-mode-help">
+          Enable dark mode for the extension popup and options page.
+        </div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2>
+        <span class="section-icon">📋</span>
+        <span id="clipboard-title">Clipboard & Integration</span>
+      </h2>
+      
+      <div class="form-group">
+        <label id="clipboard-status-label">Clipboard Status</label>
+        <div class="status-indicator" id="clipboard-status">
+          <span id="clipboard-status-text">Checking...</span>
+        </div>
+        <div class="help-text" id="clipboard-status-help">
+          The extension needs clipboard access to copy text as a fallback.
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label id="deep-link-status-label">Deep Link Status</label>
+        <div class="status-indicator" id="deep-link-status">
+          <span id="deep-link-status-text">Checking...</span>
+        </div>
+        <div class="help-text" id="deep-link-status-help">
+          Deep linking allows direct sending to ChatGPT without manual pasting.
+        </div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2>
+        <span class="section-icon">⌨️</span>
+        <span id="shortcuts-title">Keyboard Shortcuts</span>
+      </h2>
+      
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h3 id="activate-shortcut-title">Activate Extension</h3>
+          <p id="activate-shortcut-description">Open the extension popup or auto-send</p>
+          <div class="keyboard-shortcut">Ctrl+Shift+G</div>
+        </div>
+        
+        <div class="feature-card">
+          <h3 id="send-shortcut-title">Send Message</h3>
+          <p id="send-shortcut-description">Send message from popup (when popup is open)</p>
+          <div class="keyboard-shortcut">Ctrl+Enter</div>
+        </div>
+        
+        <div class="feature-card">
+          <h3 id="close-shortcut-title">Close Popup</h3>
+          <p id="close-shortcut-description">Close the popup without sending</p>
+          <div class="keyboard-shortcut">Escape</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2>
+        <span class="section-icon">🔧</span>
+        <span id="advanced-title">Advanced</span>
+      </h2>
+      
+      <div class="form-group">
+        <div class="checkbox-group">
+          <input type="checkbox" id="save-instructions">
+          <label for="save-instructions" id="save-instructions-label">Always save instructions</label>
+        </div>
+        <div class="help-text" id="save-instructions-help">
+          Automatically save instructions as default when sending to ChatGPT.
+        </div>
+      </div>
+      
+      <div class="button-group">
+        <button class="btn btn-danger" id="reset-settings">
+          <span id="reset-settings-text">Reset All Settings</span>
+        </button>
+        <button class="btn btn-secondary" id="export-settings">
+          <span id="export-settings-text">Export Settings</span>
+        </button>
+        <button class="btn btn-secondary" id="import-settings">
+          <span id="import-settings-text">Import Settings</span>
+        </button>
+      </div>
+    </div>
+    
+    <div class="button-group">
+      <button class="btn btn-primary" id="save-settings">
+        <span id="save-settings-text">Save Settings</span>
+      </button>
+      <button class="btn btn-secondary" id="test-extension">
+        <span id="test-extension-text">Test Extension</span>
+      </button>
+    </div>
+  </div>
+  
+  <input type="file" id="import-file" accept=".json" style="display: none;">
+  
+  <script type="module" src="src/options/options.ts"></script>
+</body>
+</html> 

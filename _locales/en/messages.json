@@ -1,0 +1,70 @@
+{
+  "extensionName": {
+    "message": "Send to ChatGPT",
+    "description": "Name of the extension"
+  },
+  "extensionDescription": {
+    "message": "Highlight text, add instructions, and send to ChatGPT in one click",
+    "description": "Description of the extension"
+  },
+  "sendToChatGPT": {
+    "message": "Send to ChatGPT",
+    "description": "Button text to send message to ChatGPT"
+  },
+  "selectedText": {
+    "message": "Selected Text:",
+    "description": "Label for selected text textarea"
+  },
+  "instructions": {
+    "message": "Instructions:",
+    "description": "Label for instructions textarea"
+  },
+  "instructionsPlaceholder": {
+    "message": "Enter your instructions for ChatGPT...",
+    "description": "Placeholder text for instructions input"
+  },
+  "noTextSelected": {
+    "message": "No text selected",
+    "description": "Placeholder when no text is selected"
+  },
+  "cancel": {
+    "message": "Cancel",
+    "description": "Cancel button text"
+  },
+  "send": {
+    "message": "Send",
+    "description": "Send button text"
+  },
+  "autoSend": {
+    "message": "Auto-send to ChatGPT",
+    "description": "Auto-send checkbox label"
+  },
+  "saveInstructions": {
+    "message": "Save instructions as default",
+    "description": "Save instructions checkbox label"
+  },
+  "messageCopied": {
+    "message": "Message copied to clipboard",
+    "description": "Toast message when text is copied"
+  },
+  "openingChatGPT": {
+    "message": "Opening ChatGPT...",
+    "description": "Toast message when opening ChatGPT"
+  },
+  "error": {
+    "message": "An error occurred. Please try again.",
+    "description": "Generic error message"
+  },
+  "clipboardError": {
+    "message": "Could not copy to clipboard. Please copy manually.",
+    "description": "Clipboard error message"
+  },
+  "textTruncated": {
+    "message": "Text truncated to {limit} characters",
+    "description": "Message when text is truncated"
+  },
+  "askChatGPT": {
+    "message": "Ask ChatGPT...",
+    "description": "Context menu item text"
+  }
+} 
