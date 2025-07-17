@@ -107,11 +107,13 @@ class PopupManager {
           box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
           width: 90%;
           max-width: 600px;
-          max-height: 80vh;
+          max-height: 90vh;
           overflow: hidden;
           transform: scale(0.9);
           transition: transform 300ms ease;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          display: flex;
+          flex-direction: column;
         }
         
         .popup-overlay.show .popup-modal {
@@ -125,6 +127,7 @@ class PopupManager {
           padding: 16px 20px;
           border-bottom: 1px solid #e5e7eb;
           background: #f9fafb;
+          flex-shrink: 0;
         }
         
         .popup-header h2 {
@@ -156,8 +159,9 @@ class PopupManager {
         
         .popup-content {
           padding: 20px;
-          max-height: 60vh;
+          flex: 1;
           overflow-y: auto;
+          min-height: 0;
         }
         
         .form-section {
@@ -241,6 +245,7 @@ class PopupManager {
           padding: 16px 20px;
           border-top: 1px solid #e5e7eb;
           background: #f9fafb;
+          flex-shrink: 0;
         }
         
         .btn {
@@ -376,11 +381,11 @@ class PopupManager {
           background: #4b5563;
         }
         
-        /* Mobile responsive */
+        /* Responsive design */
         @media (max-width: 640px) {
           .popup-modal {
             width: 95%;
-            max-height: 90vh;
+            max-height: 95vh;
           }
           
           .popup-content {
@@ -389,6 +394,25 @@ class PopupManager {
           
           .popup-header, .popup-footer {
             padding: 12px 16px;
+          }
+        }
+        
+        /* Small laptop screens */
+        @media (max-height: 600px) {
+          .popup-modal {
+            max-height: 95vh;
+          }
+          
+          .popup-content {
+            padding: 16px;
+          }
+          
+          .popup-header, .popup-footer {
+            padding: 12px 16px;
+          }
+          
+          .form-section {
+            margin-bottom: 12px;
           }
         }
       </style>
