@@ -7,6 +7,7 @@ import { storageManager } from '../utils/storage';
 import { sendToAI, validateMessage } from '../utils/chatgpt';
 import { i18n } from '../utils/i18n';
 import { handleScreenshotMode } from '../utils/screenshot-mode';
+import { getAllPlatforms } from '../utils/ai-platforms';
 
 interface CaptureResult {
   text: string;
@@ -58,15 +59,14 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   } else if (info.menuItemId === 'screenshot-mode' && tab?.id) {
     console.log('📸 Screenshot mode context menu clicked (default platform)');
     await handleScreenshotModeActivation();
-  } else if (info.menuItemId === 'screenshot-chatgpt' && tab?.id) {
-    console.log('📸 Screenshot mode -> ChatGPT');
-    await handleScreenshotModeActivation('chatgpt');
-  } else if (info.menuItemId === 'screenshot-claude' && tab?.id) {
-    console.log('📸 Screenshot mode -> Claude');
-    await handleScreenshotModeActivation('claude');
-  } else if (info.menuItemId === 'screenshot-gemini' && tab?.id) {
-    console.log('📸 Screenshot mode -> Gemini');
-    await handleScreenshotModeActivation('gemini');
+  } else if (info.menuItemId === 'manage-custom-platforms' && tab?.id) {
+    console.log('⚙️ Manage Custom Platforms clicked');
+    await handleManageCustomPlatforms();
+  } else if (typeof info.menuItemId === 'string' && info.menuItemId.startsWith('screenshot-') && tab?.id) {
+    // Handle dynamic platform selection (both built-in and custom)
+    const platformId = info.menuItemId.replace('screenshot-', '');
+    console.log('📸 Screenshot mode -> Platform:', platformId);
+    await handleScreenshotModeActivation(platformId);
   } else {
     console.log('❌ Unknown menu item or invalid tab:', info.menuItemId, tab?.id);
   }
@@ -93,27 +93,33 @@ async function createContextMenu() {
       contexts: ['page', 'frame', 'selection']
     });
     
-    // Add sub-menu items for different platforms
+    // Dynamically add sub-menu items for all platforms (built-in + custom)
+    const allPlatforms = await getAllPlatforms();
+    
+    for (const platform of allPlatforms) {
+      chrome.contextMenus.create({
+        id: `screenshot-${platform.id}`,
+        parentId: 'screenshot-mode',
+        title: `${platform.icon} ${platform.name}`,
+        contexts: ['page', 'frame', 'selection']
+      });
+    }
+    
+    // Add separator and "Manage Custom Platforms" option
     chrome.contextMenus.create({
-      id: 'screenshot-chatgpt',
+      id: 'screenshot-separator',
       parentId: 'screenshot-mode',
-      title: '🤖 ChatGPT',
+      type: 'separator',
       contexts: ['page', 'frame', 'selection']
     });
     
     chrome.contextMenus.create({
-      id: 'screenshot-claude',
+      id: 'manage-custom-platforms',
       parentId: 'screenshot-mode',
-      title: '🔶 Claude',
+      title: '⚙️ Manage Custom Platforms',
       contexts: ['page', 'frame', 'selection']
     });
     
-    chrome.contextMenus.create({
-      id: 'screenshot-gemini',
-      parentId: 'screenshot-mode',
-      title: '✨ Gemini',
-      contexts: ['page', 'frame', 'selection']
-    });
   } catch (error) {
     console.error('Failed to create context menu:', error);
   }
@@ -276,6 +282,30 @@ async function handleScreenshotModeActivation(platformId?: string) {
 }
 
 /**
+ * Handle manage custom platforms (opens options page)
+ */
+async function handleManageCustomPlatforms() {
+  try {
+    console.log('⚙️ Opening options page for custom platform management');
+    
+    // Open options page
+    await chrome.runtime.openOptionsPage();
+    
+    // Send message to options page to focus on custom platforms section
+    setTimeout(() => {
+      chrome.runtime.sendMessage({
+        type: 'FOCUS_CUSTOM_PLATFORMS',
+        data: {}
+      });
+    }, 500);
+    
+  } catch (error) {
+    console.error('Failed to open options page:', error);
+    showNotification('Failed to open settings page', 'error');
+  }
+}
+
+/**
  * Show notification
  */
 function showNotification(message: string, type: 'success' | 'error' | 'info' = 'info') {
@@ -320,6 +350,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       
     case 'SAVE_SETTINGS':
       storageManager.saveSettings(message.data)
+        .then(() => sendResponse({ success: true }))
+        .catch(error => sendResponse({ success: false, error: error.message }));
+      return true;
+      
+    case 'RECREATE_CONTEXT_MENU':
+      createContextMenu()
         .then(() => sendResponse({ success: true }))
         .catch(error => sendResponse({ success: false, error: error.message }));
       return true;

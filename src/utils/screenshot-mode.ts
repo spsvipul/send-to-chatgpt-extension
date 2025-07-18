@@ -3,7 +3,7 @@
  * Simple workflow: capture screenshot → copy to clipboard → open AI platform
  */
 
-import { getAllPlatforms } from './ai-platforms';
+import { getAllPlatforms, getPlatform } from './ai-platforms';
 
 export interface ScreenshotResult {
   success: boolean;
@@ -30,7 +30,7 @@ export async function handleScreenshotMode(platformId: string = 'chatgpt'): Prom
     console.log('📋 Clipboard operation result:', clipboardSuccess);
     
     // Step 3: Open AI platform and do clipboard operation there
-    const platform = getAllPlatforms().find(p => p.id === platformId);
+    const platform = await getPlatform(platformId);
     if (!platform) {
       return { success: false, error: 'Invalid platform selected' };
     }
@@ -245,8 +245,9 @@ async function copyImageToClipboardInPlatformTab(tabId: number, dataUrl: string)
 /**
  * Get list of supported platforms for screenshot mode
  */
-export function getScreenshotPlatforms() {
-  return getAllPlatforms().map(platform => ({
+export async function getScreenshotPlatforms() {
+  const allPlatforms = await getAllPlatforms();
+  return allPlatforms.map(platform => ({
     id: platform.id,
     name: platform.name,
     icon: platform.icon

@@ -280,6 +280,84 @@
       color: #374151;
     }
     
+    .custom-platform-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      background: #f9fafb;
+      transition: all 0.2s;
+    }
+    
+    .custom-platform-item:hover {
+      border-color: #3b82f6;
+      background: #eff6ff;
+    }
+    
+    .custom-platform-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .custom-platform-icon {
+      font-size: 20px;
+      width: 24px;
+      text-align: center;
+    }
+    
+    .custom-platform-details {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .custom-platform-name {
+      font-weight: 500;
+      color: #111827;
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+    
+    .custom-platform-url {
+      font-size: 12px;
+      color: #6b7280;
+      font-family: monospace;
+    }
+    
+    .custom-platform-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .btn-small {
+      padding: 4px 8px;
+      font-size: 12px;
+      min-width: auto;
+    }
+    
+    .btn-remove {
+      background: #ef4444;
+      color: white;
+    }
+    
+    .btn-remove:hover {
+      background: #dc2626;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 24px;
+      color: #6b7280;
+      font-size: 14px;
+      background: #f9fafb;
+      border: 1px dashed #d1d5db;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+    
     /* Dark mode support */
     .dark {
       background: #111827;
@@ -324,6 +402,30 @@
       background: #374151;
       border-color: #4b5563;
       color: #d1d5db;
+    }
+    
+    .dark .custom-platform-item {
+      background: #111827;
+      border-color: #374151;
+    }
+    
+    .dark .custom-platform-item:hover {
+      background: #1f2937;
+      border-color: #3b82f6;
+    }
+    
+    .dark .custom-platform-name {
+      color: #f9fafb;
+    }
+    
+    .dark .custom-platform-url {
+      color: #9ca3af;
+    }
+    
+    .dark .empty-state {
+      background: #111827;
+      border-color: #374151;
+      color: #9ca3af;
     }
     
     /* Mobile responsive */
@@ -421,6 +523,47 @@
     
     <div class="section">
       <h2>
+        <span class="section-icon">🌐</span>
+        <span id="custom-platforms-title">Custom AI Platforms</span>
+      </h2>
+      
+      <div class="form-group">
+        <p class="help-text" id="custom-platforms-help">
+          Add custom AI platforms for screenshot mode. These platforms will appear in the context menu alongside ChatGPT, Claude, and Gemini.
+        </p>
+      </div>
+      
+      <div class="form-group">
+        <label id="custom-platforms-label">Custom Platforms</label>
+        <div id="custom-platforms-list">
+          <!-- Custom platforms will be populated here -->
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <h3 style="font-size: 16px; margin-bottom: 12px;">Add New Platform</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <div>
+            <label for="platform-name" style="font-size: 12px; color: #6b7280;">Platform Name</label>
+            <input type="text" id="platform-name" placeholder="e.g., My Custom AI">
+          </div>
+          <div>
+            <label for="platform-icon" style="font-size: 12px; color: #6b7280;">Icon (emoji)</label>
+            <input type="text" id="platform-icon" placeholder="e.g., 🤖" maxlength="4">
+          </div>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <label for="platform-url" style="font-size: 12px; color: #6b7280;">URL</label>
+          <input type="url" id="platform-url" placeholder="https://example.com/chat">
+        </div>
+        <button class="btn btn-primary" id="add-custom-platform">
+          <span id="add-platform-text">Add Platform</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>
         <span class="section-icon">📋</span>
         <span id="clipboard-title">Clipboard & Integration</span>
       </h2>
@@ -514,6 +657,6 @@
   
   <input type="file" id="import-file" accept=".json" style="display: none;">
   
-  <script type="module" src="src/options/options.ts"></script>
+  <script src="options.js"></script>
 </body>
 </html> 

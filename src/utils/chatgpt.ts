@@ -83,7 +83,7 @@ export async function sendToAI(
   autoSend: boolean = true,
   platformId: string = 'chatgpt'
 ): Promise<AIResult> {
-  const platform = getPlatform(platformId);
+  const platform = await getPlatform(platformId);
   const formattedMessage = formatMessageForClipboard(message);
   
   if (!formattedMessage.trim()) {
@@ -116,7 +116,7 @@ export async function sendToAI(
     }
   }
   
-  // Manual mode: open AI platform and inject content into input field
+  // For all platforms (including custom), open the platform and inject content
   try {
     const tab = await chrome.tabs.create({ url: platform.url });
     

@@ -18,6 +18,7 @@ class PopupManager {
   private shadowRoot: ShadowRoot | null = null;
   private data: PopupData | null = null;
   private settings: ExtensionSettings | null = null;
+  private availablePlatforms: any[] = [];
 
   /**
    * Initialize popup with data
@@ -25,6 +26,14 @@ class PopupManager {
   async init(data: PopupData) {
     this.data = data;
     this.settings = await storageManager.getSettings();
+    
+    // Debug: Check if custom platforms exist in storage
+    const customPlatforms = await storageManager.getCustomPlatforms();
+    console.log('Custom platforms from storage:', customPlatforms);
+    
+    this.availablePlatforms = await getAllPlatforms();
+    
+    console.log('Popup initialized with platforms:', this.availablePlatforms);
     
     await this.createShadowDOM();
     await this.setupEventListeners();
@@ -448,18 +457,16 @@ class PopupManager {
               <label>
                 <span>AI Platform:</span>
                 <select id="ai-platform" style="margin-left: 8px; padding: 4px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 14px;">
-                  ${getAllPlatforms().map(platform => 
-                    `<option value="${platform.id}">${platform.icon} ${platform.name}</option>`
-                  ).join('')}
+                  <!-- Platform options will be populated dynamically -->
                 </select>
               </label>
               <label>
                 <input type="checkbox" id="auto-send">
-                <span id="auto-send-label">Auto-send (ChatGPT only - uses default GPT-4o)</span>
+                <span id="auto-send-label">Auto-send (works with all platforms)</span>
               </label>
               <div class="mode-explanation">
-                <p><strong>Auto-send ON:</strong> Sends directly to ChatGPT with default model</p>
-                <p><strong>Auto-send OFF:</strong> Pastes text into ChatGPT chat box for manual model selection</p>
+                <p><strong>Auto-send ON:</strong> Sends directly to the selected platform with default model</p>
+                <p><strong>Auto-send OFF:</strong> Pastes text into the platform's chat box for manual model selection</p>
               </div>
             </div>
           </div>
@@ -534,10 +541,27 @@ class PopupManager {
       saveInstructionsCheckbox.checked = this.settings.saveInstructions;
     }
 
-    // Set platform selection
+    // Populate platform options
     const platformSelect = this.shadowRoot.getElementById('ai-platform') as HTMLSelectElement;
     if (platformSelect) {
-      platformSelect.value = this.settings.defaultPlatform;
+      // Clear existing options
+      platformSelect.innerHTML = '';
+      
+      console.log('Populating platform dropdown with:', this.availablePlatforms);
+      
+      // Add all available platforms
+      this.availablePlatforms.forEach(platform => {
+        const option = document.createElement('option');
+        option.value = platform.id;
+        option.textContent = `${platform.icon} ${platform.name}`;
+        platformSelect.appendChild(option);
+        console.log('Added platform option:', platform.name, platform.id);
+      });
+      
+      // Set default platform (fallback to chatgpt if custom platform no longer exists)
+      const defaultPlatformExists = this.availablePlatforms.some(p => p.id === this.settings.defaultPlatform);
+      platformSelect.value = defaultPlatformExists ? this.settings.defaultPlatform : 'chatgpt';
+      console.log('Set default platform to:', platformSelect.value);
     }
 
     const autoSendCheckbox = this.shadowRoot.getElementById('auto-send') as HTMLInputElement;
@@ -652,7 +676,7 @@ class PopupManager {
         defaultInstructions: saveInstructions ? instructions : '',
         saveInstructions: saveInstructions,
         autoSend: autoSend,
-        defaultPlatform: selectedPlatform as 'chatgpt' | 'claude' | 'gemini'
+        defaultPlatform: selectedPlatform as any // Allow any platform ID including custom ones
       });
     }
 
@@ -672,16 +696,23 @@ class PopupManager {
     };
     
     console.log('Sending message to background:', messageData);
-    const response = await chrome.runtime.sendMessage(messageData);
+    
+    try {
+      const response = await chrome.runtime.sendMessage(messageData);
+      console.log('Received response from background:', response);
 
-    if (response.success) {
-      const notificationText = response.method === 'deeplink' 
-        ? i18n.openingChatGPT()
-        : i18n.messageCopied();
-      this.showNotification(notificationText, 'success');
-      this.closePopup();
-    } else {
-      this.showNotification(response.error || i18n.error(), 'error');
+      if (response.success) {
+        const notificationText = response.method === 'deeplink' 
+          ? i18n.openingChatGPT()
+          : i18n.messageCopied();
+        this.showNotification(notificationText, 'success');
+        this.closePopup();
+      } else {
+        this.showNotification(response.error || i18n.error(), 'error');
+      }
+    } catch (error) {
+      console.error('Failed to send message to background script:', error);
+      this.showNotification(`Communication error: ${error.message}`, 'error');
     }
   }
 

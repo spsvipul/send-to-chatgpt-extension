@@ -3,7 +3,7 @@
  * Handles user settings and preferences
  */
 
-import { storageManager, ExtensionSettings, DEFAULT_SETTINGS } from '../utils/storage';
+import { storageManager, ExtensionSettings, DEFAULT_SETTINGS, CustomPlatform } from '../utils/storage';
 import { testClipboardPermissions } from '../utils/clipboard';
 import { testDeepLink } from '../utils/chatgpt';
 import { i18n } from '../utils/i18n';
@@ -11,19 +11,25 @@ import { i18n } from '../utils/i18n';
 class OptionsManager {
   private settings: ExtensionSettings = DEFAULT_SETTINGS;
   private unsavedChanges = false;
+  private customPlatforms: CustomPlatform[] = [];
 
   /**
    * Initialize the options page
    */
   async init() {
     await this.loadSettings();
+    await this.loadCustomPlatforms();
     await this.setupEventListeners();
     await this.populateForm();
     await this.updateDarkMode();
     await this.checkSystemStatus();
+    await this.setupCustomPlatformManagement();
     
     // Auto-save on changes
     this.setupAutoSave();
+    
+    // Listen for messages from background script
+    this.setupMessageListener();
   }
 
   /**
@@ -31,6 +37,13 @@ class OptionsManager {
    */
   private async loadSettings() {
     this.settings = await storageManager.getSettings();
+  }
+
+  /**
+   * Load custom platforms from storage
+   */
+  private async loadCustomPlatforms() {
+    this.customPlatforms = await storageManager.getCustomPlatforms();
   }
 
   /**
@@ -366,6 +379,218 @@ class OptionsManager {
     } catch (error) {
       console.error('Extension test failed:', error);
       this.showNotification('Extension test failed. Please check the console for details.', 'error');
+    }
+  }
+
+  /**
+   * Setup custom platform management
+   */
+  private async setupCustomPlatformManagement() {
+    // Add custom platform button handler
+    const addPlatformBtn = document.getElementById('add-custom-platform') as HTMLButtonElement;
+    console.log('Add platform button found:', addPlatformBtn);
+    
+    if (addPlatformBtn) {
+      addPlatformBtn.addEventListener('click', () => {
+        console.log('Add platform button clicked!');
+        this.addCustomPlatform();
+      });
+    } else {
+      console.error('Add platform button not found!');
+    }
+    
+    // Initial render
+    await this.renderCustomPlatforms();
+  }
+
+  /**
+   * Setup message listener for background script communication
+   */
+  private setupMessageListener() {
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      if (message.type === 'FOCUS_CUSTOM_PLATFORMS') {
+        this.focusCustomPlatformsSection();
+      }
+    });
+  }
+
+  /**
+   * Focus on custom platforms section
+   */
+  private focusCustomPlatformsSection() {
+    const section = document.getElementById('custom-platforms-title');
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+      section.style.background = '#eff6ff';
+      section.style.padding = '8px';
+      section.style.borderRadius = '6px';
+      
+      // Remove highlight after 3 seconds
+      setTimeout(() => {
+        section.style.background = '';
+        section.style.padding = '';
+        section.style.borderRadius = '';
+      }, 3000);
+    }
+  }
+
+  /**
+   * Render custom platforms list
+   */
+  private async renderCustomPlatforms() {
+    const container = document.getElementById('custom-platforms-list');
+    if (!container) return;
+    
+    // Clear existing content
+    container.innerHTML = '';
+    
+    if (this.customPlatforms.length === 0) {
+      // Show empty state
+      const emptyState = document.createElement('div');
+      emptyState.className = 'empty-state';
+      emptyState.textContent = 'No custom platforms added yet. Add your first custom platform below.';
+      container.appendChild(emptyState);
+      return;
+    }
+    
+    // Render each custom platform
+    this.customPlatforms.forEach(platform => {
+      const platformItem = document.createElement('div');
+      platformItem.className = 'custom-platform-item';
+      
+      platformItem.innerHTML = `
+        <div class="custom-platform-info">
+          <div class="custom-platform-icon">${platform.icon}</div>
+          <div class="custom-platform-details">
+            <div class="custom-platform-name">${platform.name}</div>
+            <div class="custom-platform-url">${platform.url}</div>
+          </div>
+        </div>
+        <div class="custom-platform-actions">
+          <button class="btn btn-small btn-remove" data-platform-id="${platform.id}">
+            Remove
+          </button>
+        </div>
+      `;
+      
+      // Add remove button handler
+      const removeBtn = platformItem.querySelector('.btn-remove') as HTMLButtonElement;
+      removeBtn.addEventListener('click', () => this.removeCustomPlatform(platform.id));
+      
+      container.appendChild(platformItem);
+    });
+  }
+
+  /**
+   * Add custom platform
+   */
+  private async addCustomPlatform() {
+    console.log('addCustomPlatform method called');
+    
+    const nameInput = document.getElementById('platform-name') as HTMLInputElement;
+    const iconInput = document.getElementById('platform-icon') as HTMLInputElement;
+    const urlInput = document.getElementById('platform-url') as HTMLInputElement;
+    
+    console.log('Form inputs found:', { nameInput, iconInput, urlInput });
+    
+    const name = nameInput?.value.trim() || '';
+    const icon = iconInput?.value.trim() || '';
+    const url = urlInput?.value.trim() || '';
+    
+    console.log('Form values:', { name, icon, url });
+    
+    // Validate inputs
+    if (!name || !icon || !url) {
+      console.log('Validation failed: missing fields');
+      this.showNotification('Please fill in all fields', 'error');
+      return;
+    }
+    
+    // Basic URL validation
+    try {
+      new URL(url);
+      console.log('URL validation passed');
+    } catch (error) {
+      console.log('URL validation failed:', error);
+      this.showNotification('Please enter a valid URL', 'error');
+      return;
+    }
+    
+    // Check for duplicate names
+    if (this.customPlatforms.some(p => p.name.toLowerCase() === name.toLowerCase())) {
+      console.log('Duplicate name validation failed');
+      this.showNotification('A platform with this name already exists', 'error');
+      return;
+    }
+    
+    try {
+      console.log('Adding platform to storage...');
+      
+      // Add platform to storage
+      await storageManager.addCustomPlatform({
+        name,
+        icon,
+        url
+      });
+      
+      console.log('Platform added to storage successfully');
+      
+      // Reload custom platforms
+      await this.loadCustomPlatforms();
+      console.log('Custom platforms reloaded');
+      
+      // Re-render the list
+      await this.renderCustomPlatforms();
+      console.log('Platform list re-rendered');
+      
+      // Clear form
+      if (nameInput) nameInput.value = '';
+      if (iconInput) iconInput.value = '';
+      if (urlInput) urlInput.value = '';
+      
+      this.showNotification('Custom platform added successfully!', 'success');
+      
+      // Recreate context menu to include new platform
+      chrome.runtime.sendMessage({
+        type: 'RECREATE_CONTEXT_MENU',
+        data: {}
+      });
+      
+    } catch (error) {
+      console.error('Failed to add custom platform:', error);
+      this.showNotification('Failed to add custom platform', 'error');
+    }
+  }
+
+  /**
+   * Remove custom platform
+   */
+  private async removeCustomPlatform(platformId: string) {
+    const platform = this.customPlatforms.find(p => p.id === platformId);
+    if (!platform) return;
+    
+    if (confirm(`Are you sure you want to remove "${platform.name}"?`)) {
+      try {
+        await storageManager.removeCustomPlatform(platformId);
+        
+        // Reload custom platforms
+        await this.loadCustomPlatforms();
+        
+        // Re-render the list
+        await this.renderCustomPlatforms();
+        
+        this.showNotification('Custom platform removed successfully!', 'success');
+        
+        // Recreate context menu to remove the platform
+        chrome.runtime.sendMessage({
+          type: 'RECREATE_CONTEXT_MENU',
+          data: {}
+        });
+        
+      } catch (error) {
+        console.error('Failed to remove custom platform:', error);
+        this.showNotification('Failed to remove custom platform', 'error');
+      }
     }
   }
 

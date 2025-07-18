@@ -2,12 +2,14 @@
  * AI Platform configurations and utilities
  */
 
+import { storageManager, CustomPlatform } from './storage';
+
 export interface AIPlatform {
-  id: 'chatgpt' | 'claude' | 'gemini';
+  id: string;
   name: string;
   url: string;
-  selectors: string[];
-  color: string;
+  selectors?: string[];
+  color?: string;
   icon: string;
 }
 
@@ -59,12 +61,64 @@ export const AI_PLATFORMS: Record<string, AIPlatform> = {
   }
 };
 
-export function getPlatform(platformId: string): AIPlatform {
-  return AI_PLATFORMS[platformId] || AI_PLATFORMS.chatgpt;
+export async function getPlatform(platformId: string): Promise<AIPlatform> {
+  // Check built-in platforms first
+  if (AI_PLATFORMS[platformId]) {
+    return AI_PLATFORMS[platformId];
+  }
+  
+  // Check custom platforms
+  const customPlatforms = await storageManager.getCustomPlatforms();
+  const customPlatform = customPlatforms.find(p => p.id === platformId);
+  
+  if (customPlatform) {
+    return {
+      id: customPlatform.id,
+      name: customPlatform.name,
+      url: customPlatform.url,
+      icon: customPlatform.icon,
+      selectors: [], // Custom platforms don't have selectors (screenshot mode only)
+      color: '#6b7280' // Default gray color for custom platforms
+    };
+  }
+  
+  // Fallback to ChatGPT
+  return AI_PLATFORMS.chatgpt;
 }
 
-export function getAllPlatforms(): AIPlatform[] {
+export async function getAllPlatforms(): Promise<AIPlatform[]> {
+  const builtInPlatforms = Object.values(AI_PLATFORMS);
+  console.log('Built-in platforms:', builtInPlatforms);
+  
+  const customPlatforms = await storageManager.getCustomPlatforms();
+  console.log('Custom platforms from storage in getAllPlatforms:', customPlatforms);
+  
+  // Convert custom platforms to AIPlatform format
+  const customAIPlatforms: AIPlatform[] = customPlatforms.map(custom => ({
+    id: custom.id,
+    name: custom.name,
+    url: custom.url,
+    icon: custom.icon,
+    selectors: [], // Custom platforms don't have selectors (screenshot mode only)
+    color: '#6b7280' // Default gray color for custom platforms
+  }));
+  
+  console.log('Custom AI platforms converted:', customAIPlatforms);
+  
+  const allPlatforms = [...builtInPlatforms, ...customAIPlatforms];
+  console.log('All platforms combined:', allPlatforms);
+  
+  return allPlatforms;
+}
+
+// Synchronous version for cases where we need immediate access to built-in platforms
+export function getBuiltInPlatforms(): AIPlatform[] {
   return Object.values(AI_PLATFORMS);
+}
+
+// Synchronous version for built-in platforms only
+export function getBuiltInPlatform(platformId: string): AIPlatform {
+  return AI_PLATFORMS[platformId] || AI_PLATFORMS.chatgpt;
 }
 
 /**
@@ -76,6 +130,30 @@ export async function injectTextIntoPlatform(
   text: string
 ): Promise<boolean> {
   try {
+    // For custom platforms without selectors, use generic fallback selectors
+    const selectorsToTry = platform.selectors && platform.selectors.length > 0 
+      ? platform.selectors 
+      : [
+          // Generic AI chat interface selectors
+          'textarea[placeholder*="message"]',
+          'textarea[placeholder*="Message"]',
+          'textarea[placeholder*="chat"]',
+          'textarea[placeholder*="Chat"]',
+          'textarea[placeholder*="prompt"]',
+          'textarea[placeholder*="Prompt"]',
+          'textarea[placeholder*="ask"]',
+          'textarea[placeholder*="Ask"]',
+          'textarea[placeholder*="type"]',
+          'textarea[placeholder*="Type"]',
+          'div[contenteditable="true"]',
+          'textarea[data-testid*="input"]',
+          'textarea[data-testid*="message"]',
+          'textarea[role="textbox"]',
+          'div[role="textbox"]',
+          'textarea', // Last resort
+          'input[type="text"]' // Very last resort
+        ];
+    
     const results = await chrome.scripting.executeScript({
       target: { tabId },
       func: (messageText: string, selectors: string[]) => {
@@ -154,7 +232,7 @@ export async function injectTextIntoPlatform(
         
         tryInject();
       },
-      args: [text, platform.selectors]
+      args: [text, selectorsToTry]
     });
     
     return true;
