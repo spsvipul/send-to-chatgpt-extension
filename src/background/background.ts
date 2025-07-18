@@ -8,6 +8,7 @@ import { sendToAI, validateMessage } from '../utils/chatgpt';
 import { i18n } from '../utils/i18n';
 import { handleScreenshotMode } from '../utils/screenshot-mode';
 import { getAllPlatforms } from '../utils/ai-platforms';
+import { showNotification } from '../utils/notifications';
 
 interface CaptureResult {
   text: string;
@@ -54,21 +55,21 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   console.log('Context menu clicked:', info.menuItemId, 'on tab:', tab?.id);
   
   if (info.menuItemId === 'ask-chatgpt' && tab?.id) {
-    console.log('🔤 Text mode activated');
+    console.log('Text mode activated');
     await handleExtensionActivation(tab.id);
   } else if (info.menuItemId === 'screenshot-mode' && tab?.id) {
-    console.log('📸 Screenshot mode context menu clicked (default platform)');
+    console.log('Screenshot mode context menu clicked (default platform)');
     await handleScreenshotModeActivation();
   } else if (info.menuItemId === 'manage-custom-platforms' && tab?.id) {
-    console.log('⚙️ Manage Custom Platforms clicked');
+    console.log('Manage Custom Platforms clicked');
     await handleManageCustomPlatforms();
   } else if (typeof info.menuItemId === 'string' && info.menuItemId.startsWith('screenshot-') && tab?.id) {
     // Handle dynamic platform selection (both built-in and custom)
     const platformId = info.menuItemId.replace('screenshot-', '');
-    console.log('📸 Screenshot mode -> Platform:', platformId);
+    console.log('Screenshot mode -> Platform:', platformId);
     await handleScreenshotModeActivation(platformId);
   } else {
-    console.log('❌ Unknown menu item or invalid tab:', info.menuItemId, tab?.id);
+    console.log('Unknown menu item or invalid tab:', info.menuItemId, tab?.id);
   }
 });
 
@@ -82,14 +83,14 @@ async function createContextMenu() {
     // Text mode context menu (existing functionality)
     chrome.contextMenus.create({
       id: 'ask-chatgpt',
-      title: i18n.askChatGPT(),
+      title: 'Send Text to AI Platform',
       contexts: ['selection']
     });
     
     // Screenshot mode context menu (completely separate)
     chrome.contextMenus.create({
       id: 'screenshot-mode',
-      title: '📸 Send Screenshot to AI',
+      title: 'Send Screenshot to AI Platform',
       contexts: ['page', 'frame', 'selection']
     });
     
@@ -100,7 +101,7 @@ async function createContextMenu() {
       chrome.contextMenus.create({
         id: `screenshot-${platform.id}`,
         parentId: 'screenshot-mode',
-        title: `${platform.icon} ${platform.name}`,
+        title: platform.name,
         contexts: ['page', 'frame', 'selection']
       });
     }
@@ -237,7 +238,7 @@ async function showPopup(tabId: number, captureResult: CaptureResult) {
  */
 async function handleScreenshotModeActivation(platformId?: string) {
   try {
-    console.log('🖼️ Screenshot mode activated');
+    console.log('Screenshot mode activated');
     
     // Check if current tab is accessible for screenshot
     const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -262,18 +263,18 @@ async function handleScreenshotModeActivation(platformId?: string) {
       platform = settings.defaultPlatform || 'chatgpt';
     }
     
-    console.log('🖼️ Using platform:', platform);
+    console.log('Using platform:', platform);
     
     // Execute isolated screenshot workflow
     const result = await handleScreenshotMode(platform);
     
     if (result.success) {
       showNotification(
-        `📸 Screenshot copied! Go to ${result.platform} and paste (Ctrl+V)`,
+        `Screenshot ready! Go to ${result.platform} and paste (Ctrl+V)`,
         'success'
       );
     } else {
-      showNotification(`Screenshot failed: ${result.error}`, 'error');
+      showNotification(`Screenshot capture failed: ${result.error}`, 'error');
     }
   } catch (error) {
     console.error('Screenshot mode activation failed:', error);
@@ -286,7 +287,10 @@ async function handleScreenshotModeActivation(platformId?: string) {
  */
 async function handleManageCustomPlatforms() {
   try {
-    console.log('⚙️ Opening options page for custom platform management');
+    console.log('Opening options page for custom platform management');
+    
+    // Show brief notification
+    showNotification('Opening extension settings...', 'info');
     
     // Open options page
     await chrome.runtime.openOptionsPage();
@@ -301,23 +305,10 @@ async function handleManageCustomPlatforms() {
     
   } catch (error) {
     console.error('Failed to open options page:', error);
-    showNotification('Failed to open settings page', 'error');
+    showNotification('Failed to open extension settings', 'error');
   }
 }
 
-/**
- * Show notification
- */
-function showNotification(message: string, type: 'success' | 'error' | 'info' = 'info') {
-  const iconPath = type === 'error' ? 'icons/icon16.png' : 'icons/icon16.png';
-  
-  chrome.notifications.create({
-    type: 'basic',
-    iconUrl: iconPath,
-    title: i18n.extensionName(),
-    message: message
-  });
-}
 
 /**
  * Handle messages from content scripts and popup

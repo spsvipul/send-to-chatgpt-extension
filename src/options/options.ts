@@ -7,6 +7,7 @@ import { storageManager, ExtensionSettings, DEFAULT_SETTINGS, CustomPlatform } f
 import { testClipboardPermissions } from '../utils/clipboard';
 import { testDeepLink } from '../utils/chatgpt';
 import { i18n } from '../utils/i18n';
+import { createIcon } from '../utils/icons';
 
 class OptionsManager {
   private settings: ExtensionSettings = DEFAULT_SETTINGS;
@@ -19,6 +20,7 @@ class OptionsManager {
   async init() {
     await this.loadSettings();
     await this.loadCustomPlatforms();
+    await this.setupProfessionalIcons();
     await this.setupEventListeners();
     await this.populateForm();
     await this.updateDarkMode();
@@ -44,6 +46,44 @@ class OptionsManager {
    */
   private async loadCustomPlatforms() {
     this.customPlatforms = await storageManager.getCustomPlatforms();
+  }
+
+  /**
+   * Setup professional icons for section headers
+   */
+  private async setupProfessionalIcons() {
+    const iconMappings = [
+      { selector: '.section-icon', iconName: 'settings', title: 'General Settings' },
+      { selector: '.section-icon', iconName: 'settings', title: 'Appearance' },
+      { selector: '.section-icon', iconName: 'settings', title: 'Custom AI Platforms' },
+      { selector: '.section-icon', iconName: 'settings', title: 'Clipboard & Integration' },
+      { selector: '.section-icon', iconName: 'settings', title: 'Keyboard Shortcuts' },
+      { selector: '.section-icon', iconName: 'settings', title: 'Advanced' }
+    ];
+
+    // Map specific icons to sections
+    const sectionIcons: Record<string, string> = {
+      'General Settings': 'settings',
+      'Appearance': 'settings',
+      'Custom AI Platforms': 'settings',
+      'Clipboard & Integration': 'settings',
+      'Keyboard Shortcuts': 'settings',
+      'Advanced': 'settings'
+    };
+
+    // Update each section icon
+    document.querySelectorAll('.section h2').forEach((header) => {
+      const iconSpan = header.querySelector('.section-icon');
+      const titleSpan = header.querySelector('span[id$="-title"]');
+      
+      if (iconSpan && titleSpan) {
+        const sectionTitle = titleSpan.textContent || '';
+        const iconName = sectionIcons[sectionTitle] || 'settings';
+        
+        // Replace empty icon span with professional SVG
+        iconSpan.innerHTML = createIcon(iconName, 20, 'section-icon-svg');
+      }
+    });
   }
 
   /**

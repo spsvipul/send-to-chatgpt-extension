@@ -40,13 +40,18 @@ class PopupManager {
     await this.populateForm();
     this.showPopup();
     
-    // Focus on instructions input
+    // Focus on instructions input with smooth animation
     setTimeout(() => {
       const instructionsInput = this.shadowRoot?.getElementById('instructions') as HTMLTextAreaElement;
       if (instructionsInput) {
         instructionsInput.focus();
+        // Add subtle highlight animation
+        instructionsInput.style.transform = 'scale(1.02)';
+        setTimeout(() => {
+          instructionsInput.style.transform = 'scale(1)';
+        }, 150);
       }
-    }, 100);
+    }, 300);
   }
 
   /**
@@ -97,13 +102,14 @@ class PopupManager {
           left: 0;
           width: 100%;
           height: 100%;
-          background: rgba(0, 0, 0, 0.5);
+          background: rgba(0, 0, 0, 0.48);
+          backdrop-filter: blur(4px);
           display: flex;
           align-items: center;
           justify-content: center;
           z-index: 2147483647;
           opacity: 0;
-          transition: opacity 300ms ease;
+          transition: opacity 250ms cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .popup-overlay.show {
@@ -112,17 +118,19 @@ class PopupManager {
         
         .popup-modal {
           background: white;
-          border-radius: 8px;
-          box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+          border-radius: 12px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
           width: 90%;
           max-width: 600px;
           max-height: 90vh;
           overflow: hidden;
           transform: scale(0.9);
-          transition: transform 300ms ease;
+          transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
           display: flex;
           flex-direction: column;
+          position: relative;
+          border: 1px solid rgba(0, 0, 0, 0.06);
         }
         
         .popup-overlay.show .popup-modal {
@@ -133,17 +141,19 @@ class PopupManager {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 16px 20px;
+          padding: 20px 24px;
           border-bottom: 1px solid #e5e7eb;
-          background: #f9fafb;
+          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
           flex-shrink: 0;
+          position: relative;
         }
         
         .popup-header h2 {
           margin: 0;
-          font-size: 18px;
+          font-size: 20px;
           font-weight: 600;
           color: #111827;
+          letter-spacing: -0.02em;
         }
         
         .close-btn {
@@ -153,62 +163,74 @@ class PopupManager {
           cursor: pointer;
           color: #6b7280;
           padding: 0;
-          width: 32px;
-          height: 32px;
+          width: 36px;
+          height: 36px;
           display: flex;
           align-items: center;
           justify-content: center;
-          border-radius: 4px;
-          transition: background-color 0.2s;
+          border-radius: 8px;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          overflow: hidden;
         }
         
         .close-btn:hover {
           background: #e5e7eb;
+          transform: scale(1.05);
+        }
+        
+        .close-btn:active {
+          transform: scale(0.95);
         }
         
         .popup-content {
-          padding: 20px;
+          padding: 24px;
           flex: 1;
           overflow-y: auto;
           min-height: 0;
+          background: white;
         }
         
         .form-section {
-          margin-bottom: 16px;
+          margin-bottom: 20px;
         }
         
         .form-section label {
           display: block;
-          margin-bottom: 4px;
+          margin-bottom: 6px;
           font-weight: 500;
           color: #374151;
           font-size: 14px;
+          letter-spacing: -0.01em;
         }
         
         .form-section textarea {
           width: 100%;
           min-height: 80px;
           max-height: 200px;
-          padding: 8px 12px;
+          padding: 12px 16px;
           border: 1px solid #d1d5db;
-          border-radius: 4px;
+          border-radius: 8px;
           font-size: 14px;
           line-height: 1.5;
           resize: vertical;
           font-family: inherit;
-          transition: border-color 0.2s;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           box-sizing: border-box;
+          background: #fafafa;
         }
         
         .form-section textarea:focus {
           outline: none;
           border-color: #3b82f6;
-          box-shadow: 0 0 0 1px #3b82f6;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          background: white;
         }
         
         .form-section textarea[readonly] {
-          background: #f9fafb;
+          background: #f8fafc;
           color: #6b7280;
+          border-color: #e2e8f0;
         }
         
 
@@ -216,17 +238,22 @@ class PopupManager {
         .form-options {
           display: flex;
           flex-direction: column;
-          gap: 8px;
-          margin-top: 16px;
+          gap: 12px;
+          margin-top: 20px;
+          padding: 16px;
+          background: #f8fafc;
+          border-radius: 8px;
+          border: 1px solid #e2e8f0;
         }
         
         .form-options label {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 10px;
           font-size: 14px;
           color: #374151;
           cursor: pointer;
+          font-weight: 500;
         }
         
         .form-options input[type="checkbox"] {
@@ -235,10 +262,11 @@ class PopupManager {
         
         .mode-explanation {
           margin-top: 12px;
-          padding: 12px;
-          background: #f8fafc;
-          border-radius: 4px;
+          padding: 16px;
+          background: #eff6ff;
+          border-radius: 8px;
           border-left: 3px solid #3b82f6;
+          border: 1px solid #bfdbfe;
         }
         
         .mode-explanation p {
@@ -251,44 +279,212 @@ class PopupManager {
           display: flex;
           justify-content: flex-end;
           gap: 12px;
-          padding: 16px 20px;
+          padding: 20px 24px;
           border-top: 1px solid #e5e7eb;
-          background: #f9fafb;
+          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
           flex-shrink: 0;
         }
         
         .btn {
-          padding: 8px 16px;
+          padding: 10px 20px;
           border: none;
-          border-radius: 4px;
+          border-radius: 8px;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           min-width: 80px;
+          position: relative;
+          overflow: hidden;
         }
         
         .btn-secondary {
           background: #f3f4f6;
           color: #374151;
+          border: 1px solid #e5e7eb;
         }
         
         .btn-secondary:hover {
           background: #e5e7eb;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         
         .btn-primary {
-          background: #3b82f6;
+          background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
           color: white;
+          box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
         }
         
         .btn-primary:hover {
-          background: #2563eb;
+          background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
         }
         
         .btn:disabled {
           opacity: 0.5;
           cursor: not-allowed;
+          transform: none !important;
+          box-shadow: none !important;
+        }
+        
+        .btn:active {
+          transform: translateY(0) !important;
+        }
+        
+        /* Ripple effect for buttons */
+        .btn::before {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 0;
+          height: 0;
+          background: rgba(255, 255, 255, 0.3);
+          border-radius: 50%;
+          transform: translate(-50%, -50%);
+          transition: width 0.3s ease, height 0.3s ease;
+        }
+        
+        .btn:active::before {
+          width: 100%;
+          height: 100%;
+        }
+        
+        /* Checkbox styling */
+        .form-options input[type="checkbox"] {
+          appearance: none;
+          width: 18px;
+          height: 18px;
+          border: 2px solid #d1d5db;
+          border-radius: 4px;
+          position: relative;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          background: white;
+        }
+        
+        .form-options input[type="checkbox"]:checked {
+          background: #3b82f6;
+          border-color: #3b82f6;
+        }
+        
+        .form-options input[type="checkbox"]:checked::after {
+          content: '';
+          position: absolute;
+          width: 5px;
+          height: 8px;
+          border: solid white;
+          border-width: 0 2px 2px 0;
+          transform: rotate(45deg);
+          top: 2px;
+          left: 5px;
+        }
+        
+        .form-options input[type="checkbox"]:hover {
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+        
+        /* Select styling */
+        .form-options select {
+          appearance: none;
+          background: white;
+          border: 1px solid #d1d5db;
+          border-radius: 6px;
+          padding: 6px 12px;
+          font-size: 14px;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6,9 12,15 18,9"></polyline></svg>');
+          background-repeat: no-repeat;
+          background-position: right 8px center;
+          background-size: 16px;
+          padding-right: 32px;
+        }
+        
+        .form-options select:focus {
+          outline: none;
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+        
+        /* Loading state for buttons */
+        .btn.loading {
+          color: transparent;
+          pointer-events: none;
+        }
+        
+        .btn.loading::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 16px;
+          height: 16px;
+          margin: -8px 0 0 -8px;
+          border: 2px solid;
+          border-color: transparent currentColor currentColor transparent;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        /* Enhanced focus states */
+        .form-section textarea:focus,
+        .form-options select:focus,
+        .form-options input[type="checkbox"]:focus {
+          outline: 2px solid #3b82f6;
+          outline-offset: 2px;
+        }
+        
+        /* Enhanced form section interactions */
+        .form-section {
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          border-radius: 8px;
+          padding: 16px;
+          margin: -16px;
+          margin-bottom: 4px;
+        }
+        
+        .form-section:hover {
+          background: rgba(59, 130, 246, 0.02);
+          transform: translateY(-1px);
+        }
+        
+        .form-section.focused {
+          background: rgba(59, 130, 246, 0.04);
+          transform: translateY(-1px);
+          box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+        }
+        
+        .dark .form-section:hover {
+          background: rgba(59, 130, 246, 0.05);
+        }
+        
+        .dark .form-section.focused {
+          background: rgba(59, 130, 246, 0.08);
+        }
+        
+        /* Smooth modal entrance animation */
+        .popup-modal {
+          animation: modalEnter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes modalEnter {
+          0% {
+            opacity: 0;
+            transform: scale(0.9) translateY(20px);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
         }
         
         .notification {
@@ -319,14 +515,43 @@ class PopupManager {
           color: white;
         }
         
+        /* Dark mode enhancements */
+        .dark .form-options input[type="checkbox"] {
+          background: #374151;
+          border-color: #4b5563;
+        }
+        
+        .dark .form-options input[type="checkbox"]:checked {
+          background: #3b82f6;
+          border-color: #3b82f6;
+        }
+        
+        .dark .form-options input[type="checkbox"]:hover {
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+        
+        .dark .form-options select {
+          background: #374151;
+          border-color: #4b5563;
+          color: #f9fafb;
+        }
+        
+        .dark .form-options select:focus {
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+        
         /* Dark mode support */
         .dark .popup-modal {
           background: #1f2937;
           color: #f9fafb;
+          border-color: rgba(255, 255, 255, 0.1);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2);
         }
         
         .dark .popup-header {
-          background: #111827;
+          background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
           border-bottom-color: #374151;
         }
         
@@ -347,18 +572,21 @@ class PopupManager {
         }
         
         .dark .form-section textarea {
-          background: #374151;
+          background: #2d3748;
           border-color: #4b5563;
           color: #f9fafb;
         }
         
         .dark .form-section textarea:focus {
           border-color: #3b82f6;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+          background: #374151;
         }
         
         .dark .form-section textarea[readonly] {
-          background: #111827;
+          background: #1a202c;
           color: #9ca3af;
+          border-color: #2d3748;
         }
         
 
@@ -367,9 +595,15 @@ class PopupManager {
           color: #d1d5db;
         }
         
+        .dark .form-options {
+          background: #1a202c;
+          border-color: #2d3748;
+        }
+        
         .dark .mode-explanation {
-          background: #1f2937;
+          background: #1a202c;
           border-left-color: #3b82f6;
+          border-color: #2d3748;
         }
         
         .dark .mode-explanation p {
@@ -377,17 +611,20 @@ class PopupManager {
         }
         
         .dark .popup-footer {
-          background: #111827;
+          background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
           border-top-color: #374151;
         }
         
         .dark .btn-secondary {
           background: #374151;
           color: #d1d5db;
+          border-color: #4b5563;
         }
         
         .dark .btn-secondary:hover {
           background: #4b5563;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
         
         /* Responsive design */
@@ -508,10 +745,39 @@ class PopupManager {
     // Keyboard shortcuts
     document.addEventListener('keydown', this.handleKeydown.bind(this));
 
-    // Auto-resize textareas
+    // Auto-resize textareas and add interaction feedback
     const textareas = this.shadowRoot.querySelectorAll('textarea');
     textareas.forEach(textarea => {
       textarea.addEventListener('input', this.autoResizeTextarea);
+      
+      // Add focus/blur effects
+      textarea.addEventListener('focus', () => {
+        const parent = textarea.closest('.form-section');
+        if (parent) {
+          parent.classList.add('focused');
+        }
+      });
+      
+      textarea.addEventListener('blur', () => {
+        const parent = textarea.closest('.form-section');
+        if (parent) {
+          parent.classList.remove('focused');
+        }
+      });
+    });
+    
+    // Add button hover effects
+    const buttons = this.shadowRoot.querySelectorAll('.btn');
+    buttons.forEach(button => {
+      button.addEventListener('mouseenter', () => {
+        button.style.transform = 'translateY(-2px)';
+      });
+      
+      button.addEventListener('mouseleave', () => {
+        if (!button.classList.contains('loading')) {
+          button.style.transform = 'translateY(0)';
+        }
+      });
     });
   }
 
@@ -553,7 +819,7 @@ class PopupManager {
       this.availablePlatforms.forEach(platform => {
         const option = document.createElement('option');
         option.value = platform.id;
-        option.textContent = `${platform.icon} ${platform.name}`;
+        option.textContent = platform.name;
         platformSelect.appendChild(option);
         console.log('Added platform option:', platform.name, platform.id);
       });
@@ -579,31 +845,49 @@ class PopupManager {
   }
 
   /**
-   * Show popup with animation
+   * Show popup with enhanced animation
    */
   private showPopup() {
     if (!this.shadowRoot) return;
 
     const overlay = this.shadowRoot.getElementById('popup-overlay');
-    if (overlay) {
+    const modal = this.shadowRoot.querySelector('.popup-modal') as HTMLElement;
+    
+    if (overlay && modal) {
+      // Start with modal slightly below and smaller
+      modal.style.transform = 'scale(0.9) translateY(30px)';
+      modal.style.opacity = '0';
+      
+      // Animate entrance
       setTimeout(() => {
         overlay.classList.add('show');
+        modal.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        modal.style.transform = 'scale(1) translateY(0)';
+        modal.style.opacity = '1';
       }, 10);
     }
   }
 
   /**
-   * Close popup
+   * Close popup with enhanced animation
    */
   private closePopup() {
     if (!this.shadowRoot) return;
 
     const overlay = this.shadowRoot.getElementById('popup-overlay');
-    if (overlay) {
+    const modal = this.shadowRoot.querySelector('.popup-modal') as HTMLElement;
+    
+    if (overlay && modal) {
+      // Animate exit
+      modal.style.transition = 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)';
+      modal.style.transform = 'scale(0.9) translateY(-20px)';
+      modal.style.opacity = '0';
+      
       overlay.classList.remove('show');
+      
       setTimeout(() => {
         this.removePopup();
-      }, 300);
+      }, 250);
     }
 
     // Remove keydown listener
@@ -633,13 +917,26 @@ class PopupManager {
   }
 
   /**
-   * Auto-resize textarea
+   * Auto-resize textarea with smooth animation
    */
   private autoResizeTextarea(e: Event) {
     const textarea = e.target as HTMLTextAreaElement;
     if (textarea) {
+      const currentHeight = textarea.offsetHeight;
       textarea.style.height = 'auto';
-      textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
+      const newHeight = Math.min(textarea.scrollHeight, 200);
+      
+      // Smooth resize animation
+      if (Math.abs(newHeight - currentHeight) > 2) {
+        textarea.style.transition = 'height 0.15s ease';
+        textarea.style.height = newHeight + 'px';
+        
+        setTimeout(() => {
+          textarea.style.transition = '';
+        }, 150);
+      } else {
+        textarea.style.height = newHeight + 'px';
+      }
     }
   }
 
@@ -654,13 +951,18 @@ class PopupManager {
     const saveInstructionsCheckbox = this.shadowRoot.getElementById('save-instructions') as HTMLInputElement;
     const autoSendCheckbox = this.shadowRoot.getElementById('auto-send') as HTMLInputElement;
     const platformSelect = this.shadowRoot.getElementById('ai-platform') as HTMLSelectElement;
+    const sendBtn = this.shadowRoot.getElementById('send-btn') as HTMLButtonElement;
 
     // Check if all elements exist
-    if (!selectedTextArea || !instructionsArea || !saveInstructionsCheckbox || !autoSendCheckbox || !platformSelect) {
+    if (!selectedTextArea || !instructionsArea || !saveInstructionsCheckbox || !autoSendCheckbox || !platformSelect || !sendBtn) {
       console.error('Could not find required popup elements');
       this.showNotification('Error: Could not find form elements', 'error');
       return;
     }
+    
+    // Add loading state to button
+    sendBtn.classList.add('loading');
+    sendBtn.disabled = true;
 
     const selectedText = selectedTextArea.value || '';
     const instructions = instructionsArea.value || '';
@@ -706,13 +1008,24 @@ class PopupManager {
           ? i18n.openingChatGPT()
           : i18n.messageCopied();
         this.showNotification(notificationText, 'success');
-        this.closePopup();
+        
+        // Add success animation before closing
+        sendBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+        sendBtn.textContent = '✓ Sent!';
+        
+        setTimeout(() => {
+          this.closePopup();
+        }, 800);
       } else {
         this.showNotification(response.error || i18n.error(), 'error');
       }
     } catch (error) {
       console.error('Failed to send message to background script:', error);
       this.showNotification(`Communication error: ${error.message}`, 'error');
+    } finally {
+      // Remove loading state
+      sendBtn.classList.remove('loading');
+      sendBtn.disabled = false;
     }
   }
 

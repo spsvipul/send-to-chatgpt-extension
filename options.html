@@ -64,6 +64,30 @@
     
     .section-icon {
       font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+    }
+    
+    .section-icon-svg {
+      width: 20px;
+      height: 20px;
+      color: #6b7280;
+      transition: color 0.2s ease;
+    }
+    
+    .section:hover .section-icon-svg {
+      color: #3b82f6;
+    }
+    
+    .dark .section-icon-svg {
+      color: #9ca3af;
+    }
+    
+    .dark .section:hover .section-icon-svg {
+      color: #60a5fa;
     }
     
     .form-group {
@@ -458,7 +482,7 @@
     
     <div class="section">
       <h2>
-        <span class="section-icon">⚙️</span>
+        <span class="section-icon"></span>
         <span id="general-settings-title">General Settings</span>
       </h2>
       
@@ -506,7 +530,7 @@
     
     <div class="section">
       <h2>
-        <span class="section-icon">🎨</span>
+        <span class="section-icon"></span>
         <span id="appearance-title">Appearance</span>
       </h2>
       
@@ -523,7 +547,7 @@
     
     <div class="section">
       <h2>
-        <span class="section-icon">🌐</span>
+        <span class="section-icon"></span>
         <span id="custom-platforms-title">Custom AI Platforms</span>
       </h2>
       
@@ -549,7 +573,7 @@
           </div>
           <div>
             <label for="platform-icon" style="font-size: 12px; color: #6b7280;">Icon (emoji)</label>
-            <input type="text" id="platform-icon" placeholder="e.g., 🤖" maxlength="4">
+            <input type="text" id="platform-icon" placeholder="e.g., AI" maxlength="10">
           </div>
         </div>
         <div style="margin-bottom: 12px;">
@@ -564,7 +588,7 @@
 
     <div class="section">
       <h2>
-        <span class="section-icon">📋</span>
+        <span class="section-icon"></span>
         <span id="clipboard-title">Clipboard & Integration</span>
       </h2>
       
@@ -591,7 +615,7 @@
     
     <div class="section">
       <h2>
-        <span class="section-icon">⌨️</span>
+        <span class="section-icon"></span>
         <span id="shortcuts-title">Keyboard Shortcuts</span>
       </h2>
       
@@ -618,7 +642,7 @@
     
     <div class="section">
       <h2>
-        <span class="section-icon">🔧</span>
+        <span class="section-icon"></span>
         <span id="advanced-title">Advanced</span>
       </h2>
       

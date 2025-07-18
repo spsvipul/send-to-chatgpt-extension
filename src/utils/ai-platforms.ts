@@ -28,7 +28,7 @@ export const AI_PLATFORMS: Record<string, AIPlatform> = {
       'textarea'
     ],
     color: '#10a37f',
-    icon: '🤖'
+    icon: 'chatgpt'
   },
   claude: {
     id: 'claude',
@@ -43,7 +43,7 @@ export const AI_PLATFORMS: Record<string, AIPlatform> = {
       'textarea'
     ],
     color: '#cc785c',
-    icon: '🔶'
+    icon: 'claude'
   },
   gemini: {
     id: 'gemini',
@@ -57,7 +57,7 @@ export const AI_PLATFORMS: Record<string, AIPlatform> = {
       'textarea'
     ],
     color: '#4285f4',
-    icon: '✨'
+    icon: 'gemini'
   }
 };
 
