@@ -744,6 +744,192 @@ class PopupManager {
           color: #d1d5db;
         }
         
+        /* Settings Section Styles */
+        .settings-section {
+          padding: 0;
+        }
+        
+        .settings-section h3 {
+          margin: 0 0 8px 0;
+          font-size: 16px;
+          font-weight: 600;
+          color: #111827;
+        }
+        
+        .custom-platforms-list {
+          margin-bottom: 20px;
+        }
+        
+        .platform-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 12px 16px;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
+          margin-bottom: 8px;
+        }
+        
+        .platform-info {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        
+        .platform-icon {
+          width: 32px;
+          height: 32px;
+          background: #e2e8f0;
+          border-radius: 6px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          font-weight: 600;
+          color: #4b5563;
+        }
+        
+        .platform-details h4 {
+          margin: 0;
+          font-size: 14px;
+          font-weight: 500;
+          color: #111827;
+        }
+        
+        .platform-details p {
+          margin: 2px 0 0 0;
+          font-size: 12px;
+          color: #6b7280;
+        }
+        
+        .platform-actions {
+          display: flex;
+          gap: 8px;
+        }
+        
+        .btn-small {
+          padding: 4px 8px;
+          font-size: 12px;
+          border-radius: 4px;
+          border: 1px solid #d1d5db;
+          background: white;
+          color: #374151;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        
+        .btn-small:hover {
+          background: #f3f4f6;
+        }
+        
+        .btn-small.delete {
+          color: #dc2626;
+          border-color: #fecaca;
+        }
+        
+        .btn-small.delete:hover {
+          background: #fef2f2;
+        }
+        
+        .form-group {
+          margin-bottom: 16px;
+        }
+        
+        .form-group label {
+          display: block;
+          margin-bottom: 6px;
+          font-weight: 500;
+          color: #374151;
+          font-size: 14px;
+        }
+        
+        .form-group input {
+          width: 100%;
+          padding: 8px 12px;
+          border: 1px solid #d1d5db;
+          border-radius: 6px;
+          font-size: 14px;
+          transition: all 0.2s;
+          box-sizing: border-box;
+        }
+        
+        .form-group input:focus {
+          outline: none;
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+        
+        .form-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 8px;
+        }
+        
+        .empty-state {
+          text-align: center;
+          padding: 24px;
+          color: #6b7280;
+          font-size: 14px;
+        }
+        
+        /* Dark mode for settings */
+        .dark .settings-section h3 {
+          color: #f9fafb;
+        }
+        
+        .dark .platform-item {
+          background: #1f2937;
+          border-color: #374151;
+        }
+        
+        .dark .platform-icon {
+          background: #374151;
+          color: #d1d5db;
+        }
+        
+        .dark .platform-details h4 {
+          color: #f9fafb;
+        }
+        
+        .dark .platform-details p {
+          color: #9ca3af;
+        }
+        
+        .dark .btn-small {
+          background: #374151;
+          border-color: #4b5563;
+          color: #d1d5db;
+        }
+        
+        .dark .btn-small:hover {
+          background: #4b5563;
+        }
+        
+        .dark .btn-small.delete {
+          color: #f87171;
+          border-color: #7f1d1d;
+        }
+        
+        .dark .btn-small.delete:hover {
+          background: #7f1d1d;
+        }
+        
+        .dark .form-group input {
+          background: #374151;
+          border-color: #4b5563;
+          color: #f9fafb;
+        }
+        
+        .dark .form-group input:focus {
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+        
+        .dark .empty-state {
+          color: #9ca3af;
+        }
+        
         /* Small laptop screens */
         @media (max-height: 600px) {
           .popup-modal {
@@ -775,6 +961,7 @@ class PopupManager {
             <div class="mode-toggle">
               <button id="text-mode-btn" class="active">Share Text</button>
               <button id="url-mode-btn">Share URL</button>
+              <button id="settings-mode-btn">Settings</button>
             </div>
             
             <!-- Text Mode Content -->
@@ -805,6 +992,39 @@ class PopupManager {
               </div>
               <div class="form-section">
                 <p style="color: #6b7280; font-size: 14px; margin: 0; padding: 12px 0;">🔗 This will send <strong>only the clean URL</strong> to your selected AI platform. You can then add your own instructions there.</p>
+              </div>
+            </div>
+            
+            <!-- Settings Mode Content -->
+            <div id="settings-mode-content" style="display: none;">
+              <div class="settings-section">
+                <h3>Custom AI Platforms</h3>
+                <p style="color: #6b7280; font-size: 14px; margin: 0 0 16px 0;">Add custom AI platforms for screenshot sharing.</p>
+                
+                <div class="custom-platforms-list" id="custom-platforms-list">
+                  <!-- Custom platforms will be populated here -->
+                </div>
+                
+                <div class="add-platform-form" id="add-platform-form">
+                  <div class="form-group">
+                    <label for="platform-name">Platform Name</label>
+                    <input type="text" id="platform-name" placeholder="e.g., Custom AI" maxlength="30">
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="platform-url">Platform URL</label>
+                    <input type="url" id="platform-url" placeholder="https://example.com/chat">
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="platform-icon">Display Icon</label>
+                    <input type="text" id="platform-icon" placeholder="e.g., AI" maxlength="10">
+                  </div>
+                  
+                  <div class="form-actions">
+                    <button type="button" class="btn btn-primary" id="add-platform-btn">Add Platform</button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -861,9 +1081,11 @@ class PopupManager {
     // Mode toggle buttons
     const textModeBtn = this.shadowRoot.getElementById('text-mode-btn');
     const urlModeBtn = this.shadowRoot.getElementById('url-mode-btn');
+    const settingsModeBtn = this.shadowRoot.getElementById('settings-mode-btn');
     
     textModeBtn?.addEventListener('click', () => this.switchToTextMode());
     urlModeBtn?.addEventListener('click', () => this.switchToUrlMode());
+    settingsModeBtn?.addEventListener('click', () => this.switchToSettingsMode());
 
     // Overlay click (close on outside click)
     const overlay = this.shadowRoot.getElementById('popup-overlay');
@@ -920,19 +1142,27 @@ class PopupManager {
     
     const textModeBtn = this.shadowRoot.getElementById('text-mode-btn');
     const urlModeBtn = this.shadowRoot.getElementById('url-mode-btn');
+    const settingsModeBtn = this.shadowRoot.getElementById('settings-mode-btn');
     const textModeContent = this.shadowRoot.getElementById('text-mode-content');
     const urlModeContent = this.shadowRoot.getElementById('url-mode-content');
+    const settingsModeContent = this.shadowRoot.getElementById('settings-mode-content');
     const saveInstructionsContainer = this.shadowRoot.getElementById('save-instructions-container');
     const sendBtnText = this.shadowRoot.getElementById('send-btn-text');
+    const sendBtn = this.shadowRoot.getElementById('send-btn');
     
     // Update button states
     textModeBtn?.classList.add('active');
     urlModeBtn?.classList.remove('active');
+    settingsModeBtn?.classList.remove('active');
     
     // Show/hide content
     if (textModeContent) textModeContent.style.display = 'block';
     if (urlModeContent) urlModeContent.style.display = 'none';
+    if (settingsModeContent) settingsModeContent.style.display = 'none';
     if (saveInstructionsContainer) saveInstructionsContainer.style.display = 'block';
+    
+    // Show send button
+    if (sendBtn) sendBtn.style.display = 'block';
     
     // Update send button text
     if (sendBtnText) sendBtnText.textContent = 'Send';
@@ -946,22 +1176,246 @@ class PopupManager {
     
     const textModeBtn = this.shadowRoot.getElementById('text-mode-btn');
     const urlModeBtn = this.shadowRoot.getElementById('url-mode-btn');
+    const settingsModeBtn = this.shadowRoot.getElementById('settings-mode-btn');
     const textModeContent = this.shadowRoot.getElementById('text-mode-content');
     const urlModeContent = this.shadowRoot.getElementById('url-mode-content');
+    const settingsModeContent = this.shadowRoot.getElementById('settings-mode-content');
     const saveInstructionsContainer = this.shadowRoot.getElementById('save-instructions-container');
     const sendBtnText = this.shadowRoot.getElementById('send-btn-text');
+    const sendBtn = this.shadowRoot.getElementById('send-btn');
     
     // Update button states
     textModeBtn?.classList.remove('active');
     urlModeBtn?.classList.add('active');
+    settingsModeBtn?.classList.remove('active');
     
     // Show/hide content
     if (textModeContent) textModeContent.style.display = 'none';
     if (urlModeContent) urlModeContent.style.display = 'block';
+    if (settingsModeContent) settingsModeContent.style.display = 'none';
     if (saveInstructionsContainer) saveInstructionsContainer.style.display = 'none';
+    
+    // Show send button
+    if (sendBtn) sendBtn.style.display = 'block';
     
     // Update send button text
     if (sendBtnText) sendBtnText.textContent = 'Send URL';
+  }
+  
+  /**
+   * Switch to settings mode
+   */
+  private switchToSettingsMode() {
+    if (!this.shadowRoot) return;
+    
+    const textModeBtn = this.shadowRoot.getElementById('text-mode-btn');
+    const urlModeBtn = this.shadowRoot.getElementById('url-mode-btn');
+    const settingsModeBtn = this.shadowRoot.getElementById('settings-mode-btn');
+    const textModeContent = this.shadowRoot.getElementById('text-mode-content');
+    const urlModeContent = this.shadowRoot.getElementById('url-mode-content');
+    const settingsModeContent = this.shadowRoot.getElementById('settings-mode-content');
+    const saveInstructionsContainer = this.shadowRoot.getElementById('save-instructions-container');
+    const sendBtnText = this.shadowRoot.getElementById('send-btn-text');
+    const sendBtn = this.shadowRoot.getElementById('send-btn');
+    
+    // Update button states
+    textModeBtn?.classList.remove('active');
+    urlModeBtn?.classList.remove('active');
+    settingsModeBtn?.classList.add('active');
+    
+    // Show/hide content
+    if (textModeContent) textModeContent.style.display = 'none';
+    if (urlModeContent) urlModeContent.style.display = 'none';
+    if (settingsModeContent) settingsModeContent.style.display = 'block';
+    if (saveInstructionsContainer) saveInstructionsContainer.style.display = 'none';
+    
+    // Hide send button in settings mode
+    if (sendBtn) sendBtn.style.display = 'none';
+    
+    // Load custom platforms
+    this.loadCustomPlatforms();
+    
+    // Setup add platform form
+    this.setupAddPlatformForm();
+  }
+  
+  /**
+   * Load and display custom platforms
+   */
+  private async loadCustomPlatforms() {
+    if (!this.shadowRoot) return;
+    
+    const platformsList = this.shadowRoot.getElementById('custom-platforms-list');
+    if (!platformsList) return;
+    
+    try {
+      const customPlatforms = await storageManager.getCustomPlatforms();
+      
+      if (customPlatforms.length === 0) {
+        platformsList.innerHTML = `
+          <div class="empty-state">
+            <p>No custom platforms added yet.</p>
+            <p>Add your first custom AI platform below.</p>
+          </div>
+        `;
+        return;
+      }
+      
+      platformsList.innerHTML = '';
+      
+      customPlatforms.forEach(platform => {
+        const platformItem = document.createElement('div');
+        platformItem.className = 'platform-item';
+        platformItem.innerHTML = `
+          <div class="platform-info">
+            <div class="platform-icon">${platform.icon}</div>
+            <div class="platform-details">
+              <h4>${platform.name}</h4>
+              <p>${platform.url}</p>
+            </div>
+          </div>
+          <div class="platform-actions">
+            <button class="btn-small delete" data-platform-id="${platform.id}">Delete</button>
+          </div>
+        `;
+        
+        // Add delete event listener
+        const deleteBtn = platformItem.querySelector('.delete');
+        if (deleteBtn) {
+          deleteBtn.addEventListener('click', () => this.deletePlatform(platform.id));
+        }
+        
+        platformsList.appendChild(platformItem);
+      });
+    } catch (error) {
+      console.error('Failed to load custom platforms:', error);
+      platformsList.innerHTML = `
+        <div class="empty-state">
+          <p>Failed to load custom platforms.</p>
+        </div>
+      `;
+    }
+  }
+  
+  /**
+   * Setup add platform form
+   */
+  private setupAddPlatformForm() {
+    if (!this.shadowRoot) return;
+    
+    const addPlatformBtn = this.shadowRoot.getElementById('add-platform-btn');
+    addPlatformBtn?.addEventListener('click', () => this.addPlatform());
+    
+    // Add Enter key support for form inputs
+    const inputs = this.shadowRoot.querySelectorAll('#add-platform-form input');
+    inputs.forEach(input => {
+      input.addEventListener('keypress', (e) => {
+        if ((e as KeyboardEvent).key === 'Enter') {
+          this.addPlatform();
+        }
+      });
+    });
+  }
+  
+  /**
+   * Add new custom platform
+   */
+  private async addPlatform() {
+    if (!this.shadowRoot) return;
+    
+    const nameInput = this.shadowRoot.getElementById('platform-name') as HTMLInputElement;
+    const urlInput = this.shadowRoot.getElementById('platform-url') as HTMLInputElement;
+    const iconInput = this.shadowRoot.getElementById('platform-icon') as HTMLInputElement;
+    
+    if (!nameInput || !urlInput || !iconInput) return;
+    
+    const name = nameInput.value.trim();
+    const url = urlInput.value.trim();
+    const icon = iconInput.value.trim();
+    
+    // Validate inputs
+    if (!name) {
+      this.showNotification('Please enter a platform name', 'error');
+      nameInput.focus();
+      return;
+    }
+    
+    if (!url) {
+      this.showNotification('Please enter a platform URL', 'error');
+      urlInput.focus();
+      return;
+    }
+    
+    if (!icon) {
+      this.showNotification('Please enter a display icon', 'error');
+      iconInput.focus();
+      return;
+    }
+    
+    // Validate URL format
+    try {
+      new URL(url);
+    } catch {
+      this.showNotification('Please enter a valid URL', 'error');
+      urlInput.focus();
+      return;
+    }
+    
+    try {
+      // Add platform to storage
+      await storageManager.addCustomPlatform({
+        name,
+        url,
+        icon
+      });
+      
+      // Clear form
+      nameInput.value = '';
+      urlInput.value = '';
+      iconInput.value = '';
+      
+      // Reload platforms list
+      await this.loadCustomPlatforms();
+      
+      // Show success message
+      this.showNotification(`Platform "${name}" added successfully`, 'success');
+      
+      // Recreate context menu to include new platform
+      chrome.runtime.sendMessage({ type: 'RECREATE_CONTEXT_MENU' });
+      
+    } catch (error) {
+      console.error('Failed to add platform:', error);
+      this.showNotification('Failed to add platform', 'error');
+    }
+  }
+  
+  /**
+   * Delete custom platform
+   */
+  private async deletePlatform(platformId: string) {
+    if (!this.shadowRoot) return;
+    
+    try {
+      // Get current platforms and filter out the one to delete
+      const currentPlatforms = await storageManager.getCustomPlatforms();
+      const updatedPlatforms = currentPlatforms.filter(p => p.id !== platformId);
+      
+      // Save the updated platforms list
+      await storageManager.saveCustomPlatforms(updatedPlatforms);
+      
+      // Reload platforms list
+      await this.loadCustomPlatforms();
+      
+      // Show success message
+      this.showNotification('Platform deleted successfully', 'success');
+      
+      // Recreate context menu to remove deleted platform
+      chrome.runtime.sendMessage({ type: 'RECREATE_CONTEXT_MENU' });
+      
+    } catch (error) {
+      console.error('Failed to delete platform:', error);
+      this.showNotification('Failed to delete platform', 'error');
+    }
   }
   
   /**
@@ -1052,8 +1506,8 @@ class PopupManager {
       });
       
       // Set default platform (fallback to chatgpt if custom platform no longer exists)
-      const defaultPlatformExists = this.availablePlatforms.some(p => p.id === this.settings.defaultPlatform);
-      platformSelect.value = defaultPlatformExists ? this.settings.defaultPlatform : 'chatgpt';
+      const defaultPlatformExists = this.availablePlatforms.some(p => p.id === this.settings?.defaultPlatform);
+      platformSelect.value = defaultPlatformExists ? this.settings?.defaultPlatform || 'chatgpt' : 'chatgpt';
       console.log('Set default platform to:', platformSelect.value);
     }
 
@@ -1308,7 +1762,6 @@ class PopupManager {
     const autoSend = autoSendCheckbox.checked;
     const selectedPlatform = platformSelect.value;
     const pageUrl = pageUrlElement.textContent || '';
-    const pageTitle = pageTitleElement.textContent || '';
 
     // Validate URL
     if (!pageUrl || pageUrl === 'No URL' || pageUrl === 'Unable to load URL') {

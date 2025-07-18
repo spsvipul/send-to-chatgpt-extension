@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Send to ChatGPT",
+  "name": "BridgeAI",
   "version": "1.0.0",
-  "description": "Highlight text, add instructions, and send to ChatGPT in one click",
+  "description": "Seamlessly share text, URLs, and screenshots with any AI platform",
   "permissions": [
     "clipboardWrite",
     "storage",
@@ -19,7 +19,7 @@
     "<all_urls>"
   ],
   "action": {
-    "default_title": "Send to ChatGPT",
+    "default_title": "BridgeAI",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",
@@ -36,7 +36,7 @@
         "default": "Ctrl+Shift+G",
         "mac": "Command+Shift+G"
       },
-      "description": "Send selected text to ChatGPT"
+      "description": "Send selected text to AI platform"
     }
   },
   "icons": {

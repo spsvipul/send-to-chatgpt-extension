@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        canvas {
+            border: 1px solid #ccc;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h3>BridgeAI Icon Generator</h3>
+    <canvas id="icon16" width="16" height="16"></canvas>
+    <canvas id="icon32" width="32" height="32"></canvas>
+    <canvas id="icon48" width="48" height="48"></canvas>
+    <canvas id="icon128" width="128" height="128"></canvas>
+    
+    <script>
+        function createIcon(canvasId, size) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            
+            // Draw background
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            // Text styling
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            if (size <= 16) {
+                ctx.font = 'bold 8px Arial';
+                ctx.fillText('B', size/2, size/2);
+            } else if (size <= 32) {
+                ctx.font = 'bold 14px Arial';
+                ctx.fillText('BA', size/2, size/2);
+            } else if (size <= 48) {
+                ctx.font = 'bold 18px Arial';
+                ctx.fillText('BA', size/2, size/2);
+            } else {
+                ctx.font = 'bold 32px Arial';
+                ctx.fillText('BridgeAI', size/2, size/2);
+            }
+            
+            // Add subtle border
+            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(0, 0, size, size);
+        }
+        
+        // Generate all icons
+        createIcon('icon16', 16);
+        createIcon('icon32', 32);
+        createIcon('icon48', 48);
+        createIcon('icon128', 128);
+        
+        // Function to download canvas as PNG
+        function downloadCanvas(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        
+        // Add download buttons
+        document.body.innerHTML += `
+            <br><br>
+            <button onclick="downloadCanvas('icon16', 'icon16.png')">Download 16x16</button>
+            <button onclick="downloadCanvas('icon32', 'icon32.png')">Download 32x32</button>
+            <button onclick="downloadCanvas('icon48', 'icon48.png')">Download 48x48</button>
+            <button onclick="downloadCanvas('icon128', 'icon128.png')">Download 128x128</button>
+        `;
+    </script>
+</body>
+</html>

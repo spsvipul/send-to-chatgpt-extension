@@ -106,20 +106,7 @@ async function createContextMenu() {
       });
     }
     
-    // Add separator and "Manage Custom Platforms" option
-    chrome.contextMenus.create({
-      id: 'screenshot-separator',
-      parentId: 'screenshot-mode',
-      type: 'separator',
-      contexts: ['page', 'frame', 'selection']
-    });
-    
-    chrome.contextMenus.create({
-      id: 'manage-custom-platforms',
-      parentId: 'screenshot-mode',
-      title: '⚙️ Manage Custom Platforms',
-      contexts: ['page', 'frame', 'selection']
-    });
+    // Note: Custom platform management is now available in the extension popup Settings tab
     
   } catch (error) {
     console.error('Failed to create context menu:', error);
