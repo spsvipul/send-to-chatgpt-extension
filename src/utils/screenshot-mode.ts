@@ -26,17 +26,32 @@ export async function handleScreenshotMode(platformId: string = 'chatgpt'): Prom
     console.log('📸 Screenshot captured, size:', screenshotData.length);
     
     // Step 2: Copy to clipboard via content script
-    const clipboardSuccess = await copyImageToClipboardViaContentScript(screenshotData);
+    let clipboardSuccess = await copyImageToClipboardViaContentScript(screenshotData);
     console.log('📋 Clipboard operation result:', clipboardSuccess);
     
-    // Step 3: Open AI platform (always do this even if clipboard fails)
+    // Step 3: Open AI platform and do clipboard operation there
     const platform = getAllPlatforms().find(p => p.id === platformId);
     if (!platform) {
       return { success: false, error: 'Invalid platform selected' };
     }
     
-    await chrome.tabs.create({ url: platform.url });
+    const newTab = await chrome.tabs.create({ url: platform.url });
     console.log('🌐 Platform opened:', platform.name);
+    
+    // Step 4: If clipboard failed in original context, try in the new platform tab
+    if (!clipboardSuccess && newTab.id) {
+      console.log('🔄 Clipboard failed in original context, trying in platform tab...');
+      
+      // Wait for the platform tab to load properly
+      await waitForTabToLoad(newTab.id);
+      
+      const platformClipboardSuccess = await copyImageToClipboardInPlatformTab(newTab.id, screenshotData);
+      console.log('📋 Platform tab clipboard result:', platformClipboardSuccess);
+      
+      if (platformClipboardSuccess) {
+        clipboardSuccess = true;
+      }
+    }
     
     // Return success with clipboard status
     return { 
@@ -131,6 +146,98 @@ async function copyImageToClipboardViaContentScript(dataUrl: string): Promise<bo
     
   } catch (error) {
     console.error('❌ Failed to execute clipboard operation:', error);
+    return false;
+  }
+}
+
+/**
+ * Wait for a tab to finish loading
+ */
+async function waitForTabToLoad(tabId: number): Promise<void> {
+  return new Promise((resolve) => {
+    const checkTab = async () => {
+      try {
+        const tab = await chrome.tabs.get(tabId);
+        if (tab.status === 'complete') {
+          console.log('✅ Tab loaded successfully');
+          resolve();
+        } else {
+          console.log('⏳ Tab still loading, waiting...');
+          setTimeout(checkTab, 500);
+        }
+      } catch (error) {
+        console.error('❌ Error checking tab status:', error);
+        resolve(); // Resolve anyway to prevent hanging
+      }
+    };
+    
+    checkTab();
+    
+    // Fallback timeout after 10 seconds
+    setTimeout(() => {
+      console.log('⏰ Tab load timeout, proceeding anyway');
+      resolve();
+    }, 10000);
+  });
+}
+
+/**
+ * Copy image to clipboard via the AI platform tab (bypasses PDF restrictions)
+ */
+async function copyImageToClipboardInPlatformTab(tabId: number, dataUrl: string): Promise<boolean> {
+  try {
+    console.log('📋 Copying image to clipboard via platform tab...', tabId);
+    
+    // Execute clipboard operation in the platform tab context
+    const results = await chrome.scripting.executeScript({
+      target: { tabId },
+      func: async (imageDataUrl: string) => {
+        try {
+          console.log('🔄 Platform tab: Starting clipboard operation...');
+          
+          // Ensure document is focused (platform tab should be focused)
+          window.focus();
+          document.body.focus();
+          
+          // Wait a bit for focus to take effect
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
+          // Check if clipboard operations are supported
+          if (!('clipboard' in navigator) || 
+              !('write' in navigator.clipboard) || 
+              typeof ClipboardItem === 'undefined') {
+            console.log('❌ Platform tab: Clipboard image not supported');
+            return false;
+          }
+          
+          // Convert data URL to blob
+          const response = await fetch(imageDataUrl);
+          const blob = await response.blob();
+          
+          // Create ClipboardItem
+          const clipboardItem = new ClipboardItem({
+            [blob.type]: blob
+          });
+          
+          // Write to clipboard
+          await navigator.clipboard.write([clipboardItem]);
+          
+          console.log('✅ Platform tab: Image copied to clipboard successfully');
+          return true;
+        } catch (error) {
+          console.error('❌ Platform tab: Clipboard operation failed:', error);
+          return false;
+        }
+      },
+      args: [dataUrl]
+    });
+    
+    const success = results?.[0]?.result || false;
+    console.log('📋 Platform tab clipboard operation completed:', success);
+    return success;
+    
+  } catch (error) {
+    console.error('❌ Failed to execute platform tab clipboard operation:', error);
     return false;
   }
 }
