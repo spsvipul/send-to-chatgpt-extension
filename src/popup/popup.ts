@@ -643,6 +643,107 @@ class PopupManager {
           }
         }
         
+        /* Mode Toggle Styles */
+        .mode-toggle {
+          display: flex;
+          background: #f1f5f9;
+          border-radius: 8px;
+          padding: 4px;
+          margin-bottom: 20px;
+          border: 1px solid #e2e8f0;
+        }
+        
+        .mode-toggle button {
+          flex: 1;
+          padding: 8px 16px;
+          border: none;
+          background: transparent;
+          border-radius: 6px;
+          font-size: 14px;
+          font-weight: 500;
+          color: #64748b;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .mode-toggle button.active {
+          background: white;
+          color: #3b82f6;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .mode-toggle button:hover:not(.active) {
+          color: #475569;
+        }
+        
+        /* URL Info Section */
+        .url-info {
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
+          padding: 16px;
+          margin-bottom: 16px;
+        }
+        
+        .url-info h3 {
+          margin: 0 0 8px 0;
+          font-size: 14px;
+          font-weight: 600;
+          color: #374151;
+        }
+        
+        .url-info p {
+          margin: 0;
+          font-size: 13px;
+          color: #6b7280;
+          line-height: 1.4;
+        }
+        
+        .url-display {
+          background: white;
+          border: 1px solid #d1d5db;
+          border-radius: 6px;
+          padding: 8px 12px;
+          font-size: 12px;
+          color: #4b5563;
+          word-break: break-all;
+          margin-top: 8px;
+        }
+        
+        /* Dark mode for new elements */
+        .dark .mode-toggle {
+          background: #1f2937;
+          border-color: #374151;
+        }
+        
+        .dark .mode-toggle button {
+          color: #9ca3af;
+        }
+        
+        .dark .mode-toggle button.active {
+          background: #374151;
+          color: #3b82f6;
+        }
+        
+        .dark .url-info {
+          background: #1f2937;
+          border-color: #374151;
+        }
+        
+        .dark .url-info h3 {
+          color: #f3f4f6;
+        }
+        
+        .dark .url-info p {
+          color: #9ca3af;
+        }
+        
+        .dark .url-display {
+          background: #374151;
+          border-color: #4b5563;
+          color: #d1d5db;
+        }
+        
         /* Small laptop screens */
         @media (max-height: 600px) {
           .popup-modal {
@@ -666,28 +767,49 @@ class PopupManager {
       <div class="popup-overlay" id="popup-overlay">
         <div class="popup-modal">
           <div class="popup-header">
-            <h2 id="popup-title">${i18n.sendToChatGPT()}</h2>
+            <h2 id="popup-title">Send to AI Platform</h2>
             <button class="close-btn" id="close-btn">×</button>
           </div>
           <div class="popup-content">
-            <div class="form-section">
-              <label for="selected-text" id="selected-text-label">${i18n.selectedText()}</label>
-              <textarea 
-                id="selected-text" 
-                readonly
-                placeholder="${i18n.noTextSelected()}"
-              ></textarea>
+            <!-- Mode Toggle -->
+            <div class="mode-toggle">
+              <button id="text-mode-btn" class="active">Share Text</button>
+              <button id="url-mode-btn">Share URL</button>
             </div>
-            <div class="form-section">
-              <label for="instructions" id="instructions-label">${i18n.instructions()}</label>
-              <textarea 
-                id="instructions" 
-                placeholder="${i18n.instructionsPlaceholder()}"
-              ></textarea>
+            
+            <!-- Text Mode Content -->
+            <div id="text-mode-content">
+              <div class="form-section">
+                <label for="selected-text" id="selected-text-label">${i18n.selectedText()}</label>
+                <textarea 
+                  id="selected-text" 
+                  readonly
+                  placeholder="${i18n.noTextSelected()}"
+                ></textarea>
+              </div>
+              <div class="form-section">
+                <label for="instructions" id="instructions-label">${i18n.instructions()}</label>
+                <textarea 
+                  id="instructions" 
+                  placeholder="${i18n.instructionsPlaceholder()}"
+                ></textarea>
+              </div>
+            </div>
+            
+            <!-- URL Mode Content -->
+            <div id="url-mode-content" style="display: none;">
+              <div class="url-info">
+                <h3>Current Page</h3>
+                <p id="page-title">Loading...</p>
+                <div class="url-display" id="page-url">Loading...</div>
+              </div>
+              <div class="form-section">
+                <p style="color: #6b7280; font-size: 14px; margin: 0; padding: 12px 0;">🔗 This will send <strong>only the clean URL</strong> to your selected AI platform. You can then add your own instructions there.</p>
+              </div>
             </div>
 
             <div class="form-options">
-              <label>
+              <label id="save-instructions-container">
                 <input type="checkbox" id="save-instructions">
                 <span id="save-instructions-label">${i18n.saveInstructions()}</span>
               </label>
@@ -709,7 +831,9 @@ class PopupManager {
           </div>
           <div class="popup-footer">
             <button class="btn btn-secondary" id="cancel-btn">${i18n.cancel()}</button>
-            <button class="btn btn-primary" id="send-btn">${i18n.send()}</button>
+            <button class="btn btn-primary" id="send-btn">
+              <span id="send-btn-text">${i18n.send()}</span>
+            </button>
           </div>
         </div>
       </div>
@@ -733,6 +857,13 @@ class PopupManager {
     // Send button
     const sendBtn = this.shadowRoot.getElementById('send-btn');
     sendBtn?.addEventListener('click', () => this.sendToChatGPT());
+    
+    // Mode toggle buttons
+    const textModeBtn = this.shadowRoot.getElementById('text-mode-btn');
+    const urlModeBtn = this.shadowRoot.getElementById('url-mode-btn');
+    
+    textModeBtn?.addEventListener('click', () => this.switchToTextMode());
+    urlModeBtn?.addEventListener('click', () => this.switchToUrlMode());
 
     // Overlay click (close on outside click)
     const overlay = this.shadowRoot.getElementById('popup-overlay');
@@ -770,15 +901,108 @@ class PopupManager {
     const buttons = this.shadowRoot.querySelectorAll('.btn');
     buttons.forEach(button => {
       button.addEventListener('mouseenter', () => {
-        button.style.transform = 'translateY(-2px)';
+        (button as HTMLElement).style.transform = 'translateY(-2px)';
       });
       
       button.addEventListener('mouseleave', () => {
         if (!button.classList.contains('loading')) {
-          button.style.transform = 'translateY(0)';
+          (button as HTMLElement).style.transform = 'translateY(0)';
         }
       });
     });
+  }
+
+  /**
+   * Switch to text sharing mode
+   */
+  private switchToTextMode() {
+    if (!this.shadowRoot) return;
+    
+    const textModeBtn = this.shadowRoot.getElementById('text-mode-btn');
+    const urlModeBtn = this.shadowRoot.getElementById('url-mode-btn');
+    const textModeContent = this.shadowRoot.getElementById('text-mode-content');
+    const urlModeContent = this.shadowRoot.getElementById('url-mode-content');
+    const saveInstructionsContainer = this.shadowRoot.getElementById('save-instructions-container');
+    const sendBtnText = this.shadowRoot.getElementById('send-btn-text');
+    
+    // Update button states
+    textModeBtn?.classList.add('active');
+    urlModeBtn?.classList.remove('active');
+    
+    // Show/hide content
+    if (textModeContent) textModeContent.style.display = 'block';
+    if (urlModeContent) urlModeContent.style.display = 'none';
+    if (saveInstructionsContainer) saveInstructionsContainer.style.display = 'block';
+    
+    // Update send button text
+    if (sendBtnText) sendBtnText.textContent = 'Send';
+  }
+  
+  /**
+   * Switch to URL sharing mode
+   */
+  private switchToUrlMode() {
+    if (!this.shadowRoot) return;
+    
+    const textModeBtn = this.shadowRoot.getElementById('text-mode-btn');
+    const urlModeBtn = this.shadowRoot.getElementById('url-mode-btn');
+    const textModeContent = this.shadowRoot.getElementById('text-mode-content');
+    const urlModeContent = this.shadowRoot.getElementById('url-mode-content');
+    const saveInstructionsContainer = this.shadowRoot.getElementById('save-instructions-container');
+    const sendBtnText = this.shadowRoot.getElementById('send-btn-text');
+    
+    // Update button states
+    textModeBtn?.classList.remove('active');
+    urlModeBtn?.classList.add('active');
+    
+    // Show/hide content
+    if (textModeContent) textModeContent.style.display = 'none';
+    if (urlModeContent) urlModeContent.style.display = 'block';
+    if (saveInstructionsContainer) saveInstructionsContainer.style.display = 'none';
+    
+    // Update send button text
+    if (sendBtnText) sendBtnText.textContent = 'Send URL';
+  }
+  
+  /**
+   * Load current page information
+   */
+  private async loadCurrentPageInfo() {
+    if (!this.shadowRoot) return;
+    
+    try {
+      // Request current tab info from background script
+      const response = await chrome.runtime.sendMessage({
+        type: 'GET_CURRENT_TAB_INFO'
+      });
+      
+      if (response && response.success) {
+        const pageTitleElement = this.shadowRoot.getElementById('page-title');
+        const pageUrlElement = this.shadowRoot.getElementById('page-url');
+        
+        if (pageTitleElement) {
+          pageTitleElement.textContent = response.data?.title || 'Untitled Page';
+        }
+        
+        if (pageUrlElement) {
+          pageUrlElement.textContent = response.data?.url || 'No URL';
+        }
+      } else {
+        throw new Error('Failed to get tab info from background script');
+      }
+    } catch (error) {
+      console.error('Failed to load page info:', error);
+      const pageTitleElement = this.shadowRoot.getElementById('page-title');
+      const pageUrlElement = this.shadowRoot.getElementById('page-url');
+      
+      if (pageTitleElement) {
+        pageTitleElement.textContent = 'Unable to load page info';
+      }
+      
+      if (pageUrlElement) {
+        pageUrlElement.textContent = 'Unable to load URL';
+      }
+    }
   }
 
   /**
@@ -806,6 +1030,9 @@ class PopupManager {
     if (saveInstructionsCheckbox) {
       saveInstructionsCheckbox.checked = this.settings.saveInstructions;
     }
+    
+    // Load current page info for URL mode
+    await this.loadCurrentPageInfo();
 
     // Populate platform options
     const platformSelect = this.shadowRoot.getElementById('ai-platform') as HTMLSelectElement;
@@ -941,9 +1168,25 @@ class PopupManager {
   }
 
   /**
-   * Send message to ChatGPT
+   * Send message to AI Platform
    */
   private async sendToChatGPT() {
+    if (!this.shadowRoot) return;
+
+    // Check current mode
+    const isUrlMode = this.shadowRoot.getElementById('url-mode-btn')?.classList.contains('active');
+    
+    if (isUrlMode) {
+      await this.sendUrlToAI();
+    } else {
+      await this.sendTextToAI();
+    }
+  }
+  
+  /**
+   * Send text to AI Platform
+   */
+  private async sendTextToAI() {
     if (!this.shadowRoot) return;
 
     const selectedTextArea = this.shadowRoot.getElementById('selected-text') as HTMLTextAreaElement;
@@ -971,6 +1214,15 @@ class PopupManager {
     const selectedPlatform = platformSelect.value;
 
     console.log('Form values:', { selectedText, instructions, saveInstructions, autoSend, selectedPlatform });
+    
+    // Validate inputs
+    if (!selectedText && !instructions) {
+      this.showNotification('Please select text or enter instructions', 'error');
+      // Remove loading state
+      sendBtn.classList.remove('loading');
+      sendBtn.disabled = false;
+      return;
+    }
 
     // Save settings if requested
     if (saveInstructions || this.settings?.autoSend !== autoSend || this.settings?.defaultPlatform !== selectedPlatform) {
@@ -1021,7 +1273,102 @@ class PopupManager {
       }
     } catch (error) {
       console.error('Failed to send message to background script:', error);
-      this.showNotification(`Communication error: ${error.message}`, 'error');
+      this.showNotification(`Communication error: ${(error as Error).message}`, 'error');
+    } finally {
+      // Remove loading state
+      sendBtn.classList.remove('loading');
+      sendBtn.disabled = false;
+    }
+  }
+  
+  /**
+   * Send URL to AI Platform
+   */
+  private async sendUrlToAI() {
+    if (!this.shadowRoot) return;
+
+    const autoSendCheckbox = this.shadowRoot.getElementById('auto-send') as HTMLInputElement;
+    const platformSelect = this.shadowRoot.getElementById('ai-platform') as HTMLSelectElement;
+    const sendBtn = this.shadowRoot.getElementById('send-btn') as HTMLButtonElement;
+    const pageUrlElement = this.shadowRoot.getElementById('page-url') as HTMLElement;
+    const pageTitleElement = this.shadowRoot.getElementById('page-title') as HTMLElement;
+
+    // Check if all elements exist
+    if (!autoSendCheckbox || !platformSelect || !sendBtn || !pageUrlElement || !pageTitleElement) {
+      console.error('Could not find required popup elements for URL mode');
+      this.showNotification('Error: Could not find form elements', 'error');
+      return;
+    }
+    
+    // Add loading state to button
+    sendBtn.classList.add('loading');
+    sendBtn.disabled = true;
+
+    // Get form values
+    const autoSend = autoSendCheckbox.checked;
+    const selectedPlatform = platformSelect.value;
+    const pageUrl = pageUrlElement.textContent || '';
+    const pageTitle = pageTitleElement.textContent || '';
+
+    // Validate URL
+    if (!pageUrl || pageUrl === 'No URL' || pageUrl === 'Unable to load URL') {
+      this.showNotification('Unable to get current page URL', 'error');
+      // Remove loading state
+      sendBtn.classList.remove('loading');
+      sendBtn.disabled = false;
+      return;
+    }
+
+    // Save platform preference
+    if (this.settings?.defaultPlatform !== selectedPlatform) {
+      await storageManager.saveSettings({
+        defaultInstructions: this.settings?.defaultInstructions || '',
+        saveInstructions: this.settings?.saveInstructions || false,
+        autoSend: autoSend,
+        defaultPlatform: selectedPlatform as any
+      });
+    }
+
+    // Send clean URL to AI platform
+    const messageData = {
+      type: 'SEND_TO_AI',
+      data: {
+        message: {
+          text: pageUrl,  // Clean URL only
+          instructions: '',
+          model: this.settings?.defaultModel || 'gpt-4o',
+          platform: selectedPlatform
+        },
+        autoSend: autoSend,
+        platform: selectedPlatform
+      }
+    };
+
+    console.log('Sending URL to background:', messageData);
+
+    try {
+      const response = await chrome.runtime.sendMessage(messageData);
+      console.log('Received response from background:', response);
+
+      if (response.success) {
+        const notificationText = response.method === 'deeplink' 
+          ? `Opening ${selectedPlatform}...`
+          : `URL sent to ${selectedPlatform}! Go paste it (Ctrl+V)`;
+        this.showNotification(notificationText, 'success');
+        
+        // Add success animation before closing
+        sendBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+        sendBtn.textContent = '✓ Sent!';
+        
+        setTimeout(() => {
+          this.closePopup();
+        }, 800);
+      } else {
+        this.showNotification(response.error || 'Failed to send URL', 'error');
+      }
+    } catch (error) {
+      console.error('Failed to send message to background script:', error);
+      this.showNotification(`Communication error: ${(error as Error).message}`, 'error');
     } finally {
       // Remove loading state
       sendBtn.classList.remove('loading');

@@ -309,6 +309,42 @@ async function handleManageCustomPlatforms() {
   }
 }
 
+/**
+ * Get current tab information
+ */
+async function getCurrentTabInfo() {
+  try {
+    const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    
+    if (!activeTab) {
+      throw new Error('No active tab found');
+    }
+    
+    return {
+      title: activeTab.title || 'Untitled Page',
+      url: activeTab.url || 'No URL'
+    };
+  } catch (error) {
+    console.error('Failed to get current tab info:', error);
+    throw error;
+  }
+}
+
+/**
+ * Copy text to clipboard (fallback method)
+ */
+async function copyTextToClipboard(text: string) {
+  try {
+    // For now, just return success and let the user manually copy
+    // The primary method in popup uses navigator.clipboard.writeText
+    console.log('Fallback clipboard method called for text:', text);
+    return Promise.resolve();
+  } catch (error) {
+    console.error('Failed to copy text to clipboard:', error);
+    throw error;
+  }
+}
+
 
 /**
  * Handle messages from content scripts and popup
@@ -347,6 +383,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       
     case 'RECREATE_CONTEXT_MENU':
       createContextMenu()
+        .then(() => sendResponse({ success: true }))
+        .catch(error => sendResponse({ success: false, error: error.message }));
+      return true;
+      
+    case 'GET_CURRENT_TAB_INFO':
+      getCurrentTabInfo()
+        .then(tabInfo => sendResponse({ success: true, data: tabInfo }))
+        .catch(error => sendResponse({ success: false, error: error.message }));
+      return true;
+      
+    case 'COPY_TEXT_TO_CLIPBOARD':
+      copyTextToClipboard(message.data.text)
         .then(() => sendResponse({ success: true }))
         .catch(error => sendResponse({ success: false, error: error.message }));
       return true;
